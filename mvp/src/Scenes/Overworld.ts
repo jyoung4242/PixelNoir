@@ -1,9 +1,12 @@
-import { Engine, Entity, Scene, SceneActivationContext, Trigger, vec } from "excalibur";
+import { Engine, Entity, Scene, SceneActivationContext, Trigger, vec, Vector } from "excalibur";
 import { StaticMap } from "../Actors/staticMap";
 import { Resources } from "../resources";
 import { Detective } from "../Actors/detective";
+import { initPlayerInScene, isDetective } from "../Lib/utils";
+import { TransitionContext } from "../types";
 
-export class OverWorld extends Scene<Detective> {
+export class OverWorld extends Scene<TransitionContext> {
+  name = "Overworld";
   map: StaticMap | undefined = undefined;
   barTrigger: Trigger | undefined = undefined;
   warehouseTrigger: Trigger | undefined = undefined;
@@ -46,52 +49,73 @@ export class OverWorld extends Scene<Detective> {
 
     //add scene triggers
     this.barTrigger = new Trigger({
-      pos: vec(23 * 16, 7 * 16),
+      pos: vec(23 * 16 + 8, 7 * 16 - 8),
       width: 16,
-      height: 16,
+      height: 2,
       action: (en: Entity) => {
         if (isDetective(en)) {
-          engine.goToScene("Bar", { sceneActivationData: this.player });
+          this.player!.graphics.isVisible = false;
+          this.remove(this.player!);
+
+          engine.goToScene("Bar", {
+            sceneActivationData: {
+              player: this.player,
+              facing: Vector.Up,
+              leavingScene: "Overworld",
+            },
+          });
         }
       },
     });
     this.add(this.barTrigger);
 
     this.warehouseTrigger = new Trigger({
-      pos: vec(29 * 16, 8 * 16),
+      pos: vec(29 * 16 + 8, 8 * 16 + 8),
       width: 16,
-      height: 16,
-      action: (ent: Entity) => {
-        if (isDetective(ent)) {
-          engine.goToScene("Warehouse", { sceneActivationData: this.player });
+      height: 2,
+      action: (en: Entity) => {
+        if (isDetective(en)) {
+          this.player!.graphics.isVisible = false;
+          this.remove(this.player!);
+
+          engine.goToScene("Warehouse", {
+            sceneActivationData: {
+              player: this.player,
+              facing: Vector.Up,
+              leavingScene: "Overworld",
+            },
+          });
         }
       },
     });
+
     this.add(this.warehouseTrigger);
 
     this.PIofficeTrigger = new Trigger({
-      pos: vec(5 * 16, 8 * 16),
+      pos: vec(5 * 16 + 8, 8 * 16 + 8),
       width: 16,
-      height: 16,
+      height: 2,
       action: (ent: Entity) => {
         if (isDetective(ent)) {
-          engine.goToScene("PIOffice", { sceneActivationData: this.map });
+          engine.goToScene("PIOffice", {
+            sceneActivationData: {
+              player: this.player,
+              facing: Vector.Up,
+              leavingScene: "Overworld",
+            },
+          });
         }
       },
     });
     this.add(this.PIofficeTrigger);
   }
 
-  onActivate(ctx: SceneActivationContext<Detective>) {
-    if (ctx.data) {
-      this.add(ctx.data);
-      this.player = ctx.data;
-    }
+  onActivate(ctx: SceneActivationContext<TransitionContext>) {
+    initPlayerInScene(this, ctx);
   }
 
-  onDeactivate(ctx: SceneActivationContext) {}
-}
-
-function isDetective(ent: Entity): ent is Detective {
-  return ent instanceof Detective;
+  onDeactivate(ctx: SceneActivationContext) {
+    this.remove(this.player!);
+    this.player = undefined;
+  }
 }

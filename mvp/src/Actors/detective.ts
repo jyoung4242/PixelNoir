@@ -116,6 +116,20 @@ export class Detective extends Actor {
     });
   }
 
+  onAdd(engine: Engine): void {
+    let ac = this.get(AnimationComponent);
+    if (ac) {
+      let dir = "";
+      if (this.directionFacing.equals(Vector.Down)) dir = "Down";
+      else if (this.directionFacing.equals(Vector.Up)) dir = "Up";
+      else if (this.directionFacing.equals(Vector.Left)) dir = "Left";
+      else if (this.directionFacing.equals(Vector.Right)) dir = "Right";
+      else dir = "Down";
+      let animstring = `Idle${dir}`;
+      ac.set(animstring);
+    }
+  }
+
   onPreUpdate(engine: Engine, delta: number) {
     const deltaSeconds = delta / 1000;
 
