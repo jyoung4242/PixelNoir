@@ -47,7 +47,6 @@ export class StaticMap extends Actor {
       });
       this.addChild(this.upper);
     }
-    console.log(this);
   }
 
   onInitialize(engine: ex.Engine) {

@@ -74,7 +74,7 @@
 //     }
 //   }
 // }
-import { Actor, CollisionType, Engine, Ray, vec, Vector } from "excalibur";
+import { Actor, CollisionType, Engine, Ray, Trigger, vec, Vector } from "excalibur";
 import { DetectiveAnimations } from "../Animations/Detective";
 import { AnimationComponent } from "../Components/animation";
 import { GlobalEvents } from "../Lib/GlobalEvents";
@@ -163,15 +163,22 @@ export class Detective extends Actor {
   }
 
   private isTileBlocked(engine: Engine, dir: Vector): boolean {
-    // Cast a ray 16 pixels ahead to detect child Wall entity colliders
+    // Cast a ray 16 pixels ahead to detect colliders
     const ray = new Ray(this.pos, dir);
     const hits = engine.currentScene.physics.rayCast(ray, {
       maxDistance: this.tileSize,
       searchAllColliders: true,
     });
 
-    // Ignore hits originating from the actor itself
-    return hits.some(hit => hit.collider.owner !== this);
+    // Ignore hits originating from this actor, Triggers, and non-colliding entities
+    return hits.some(hit => {
+      const owner = hit.collider.owner;
+
+      const isSelf = owner === this;
+      const isTrigger = owner instanceof Trigger || hit.body.collisionType === CollisionType.PreventCollision;
+
+      return !isSelf && !isTrigger;
+    });
   }
 
   setAnimationBasedOnDirection(dir: Vector) {
