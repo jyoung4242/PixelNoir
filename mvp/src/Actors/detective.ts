@@ -1,0 +1,190 @@
+// import { Actor, CollisionType, Engine, vec, Vector } from "excalibur";
+// import { DetectiveAnimations } from "../Animations/Detective";
+// import { AnimationComponent } from "../Components/animation";
+// import { GlobalEvents } from "../Lib/GlobalEvents";
+
+// export class Detective extends Actor {
+//   isMoving: boolean = false;
+//   directionFacing: Vector = Vector.Down;
+//   speed: number = 50;
+
+//   constructor() {
+//     super({
+//       pos: vec(123, 185),
+//       width: 16,
+//       height: 16,
+//       anchor: vec(0.5, 1.0),
+//       z: 1,
+//       collisionType: CollisionType.Active,
+//     });
+//   }
+
+//   onInitialize(engine: Engine) {
+//     this.addComponent(new AnimationComponent(DetectiveAnimations));
+//     this.get(AnimationComponent).set("IdleDown");
+//     engine.currentScene.camera.strategy.lockToActor(this);
+//     engine.currentScene.camera.zoom = 3.5;
+
+//     // setup global events
+//     GlobalEvents.on("player-move", dir => {
+//       if (dir.x > 0) {
+//         this.directionFacing = Vector.Right;
+//         this.vel.x = this.speed;
+//       } else if (dir.x < 0) {
+//         this.directionFacing = Vector.Left;
+//         this.vel.x = -this.speed;
+//       } else if (dir.y > 0) {
+//         this.directionFacing = Vector.Down;
+//         this.vel.y = this.speed;
+//       } else if (dir.y < 0) {
+//         this.directionFacing = Vector.Up;
+//         this.vel.y = -this.speed;
+//       } else {
+//         this.vel = Vector.Zero;
+//       } // Stop movement if no direction
+//     });
+//   }
+
+//   onPreUpdate(engine: Engine, delta: number) {
+//     this.isMoving = this.vel.equals(Vector.Zero) === true ? false : true;
+//     this.setAnimationBasedOnDirection(this.vel);
+//   }
+
+//   setAnimationBasedOnDirection(dir: Vector) {
+//     if (this.isMoving) {
+//       if (dir.x > 0) {
+//         this.get(AnimationComponent).set("WalkRight");
+//       } else if (dir.x < 0) {
+//         this.get(AnimationComponent).set("WalkLeft");
+//       } else if (dir.y > 0) {
+//         this.get(AnimationComponent).set("WalkDown");
+//       } else if (dir.y < 0) {
+//         this.get(AnimationComponent).set("WalkUp");
+//       }
+//     } else {
+//       if (this.directionFacing.equals(Vector.Right)) {
+//         this.get(AnimationComponent).set("IdleRight");
+//       } else if (this.directionFacing.equals(Vector.Left)) {
+//         this.get(AnimationComponent).set("IdleLeft");
+//       } else if (this.directionFacing.equals(Vector.Down)) {
+//         this.get(AnimationComponent).set("IdleDown");
+//       } else if (this.directionFacing.equals(Vector.Up)) {
+//         this.get(AnimationComponent).set("IdleUp");
+//       }
+//     }
+//   }
+// }
+import { Actor, CollisionType, Engine, Ray, vec, Vector } from "excalibur";
+import { DetectiveAnimations } from "../Animations/Detective";
+import { AnimationComponent } from "../Components/animation";
+import { GlobalEvents } from "../Lib/GlobalEvents";
+
+export class Detective extends Actor {
+  tileSize: number = 16;
+  speed: number = 45;
+  isMoving: boolean = false;
+  directionFacing: Vector = Vector.Down;
+  currentDirection: Vector = Vector.Zero;
+  targetPos: Vector | null = null;
+
+  constructor(tilpos: Vector) {
+    super({
+      pos: vec(tilpos.x * 16, tilpos.y * 16),
+      width: 16,
+      height: 16,
+      anchor: Vector.Half, // Center anchor aligns cleanly with 16x16 grid math
+      z: 1,
+      collisionType: CollisionType.Active,
+    });
+    this.graphics.offset = vec(0, -6); // Reset graphics offset to align with anchor
+  }
+
+  onInitialize(engine: Engine) {
+    this.addComponent(new AnimationComponent(DetectiveAnimations));
+    this.get(AnimationComponent).set("IdleDown");
+    engine.currentScene.camera.strategy.lockToActor(this);
+    engine.currentScene.camera.zoom = 3.5;
+
+    // Snap starting position directly to the center of the current 16x16 tile
+    this.pos = vec(
+      Math.floor(this.pos.x / this.tileSize) * this.tileSize + this.tileSize / 2,
+      Math.floor(this.pos.y / this.tileSize) * this.tileSize + this.tileSize / 2,
+    );
+
+    GlobalEvents.on("player-move", dir => {
+      this.currentDirection = dir;
+    });
+  }
+
+  onPreUpdate(engine: Engine, delta: number) {
+    const deltaSeconds = delta / 1000;
+
+    // Attempt next grid step if stationary
+    if (!this.isMoving && !this.currentDirection.equals(Vector.Zero)) {
+      this.tryMove(engine, this.currentDirection);
+    }
+
+    // Process movement along the step
+    if (this.isMoving && this.targetPos) {
+      const step = this.directionFacing.scale(this.speed * deltaSeconds);
+      const distanceToTarget = this.targetPos.sub(this.pos);
+
+      if (step.magnitude >= distanceToTarget.magnitude) {
+        this.pos = this.targetPos; // Lock cleanly to target tile center
+
+        // Chain immediately into the next tile step if directional key is still held
+        if (!this.currentDirection.equals(Vector.Zero)) {
+          this.tryMove(engine, this.currentDirection);
+        } else {
+          this.isMoving = false;
+          this.targetPos = null;
+          this.setAnimationBasedOnDirection(Vector.Zero);
+        }
+      } else {
+        this.pos = this.pos.add(step);
+      }
+    }
+  }
+
+  private tryMove(engine: Engine, dir: Vector) {
+    this.directionFacing = dir;
+
+    // Check if Wall colliders occupy the target step destination
+    if (this.isTileBlocked(engine, dir)) {
+      this.isMoving = false;
+      this.targetPos = null;
+      this.setAnimationBasedOnDirection(Vector.Zero);
+      return;
+    }
+
+    this.isMoving = true;
+    this.targetPos = this.pos.add(dir.scale(this.tileSize));
+    this.setAnimationBasedOnDirection(dir);
+  }
+
+  private isTileBlocked(engine: Engine, dir: Vector): boolean {
+    // Cast a ray 16 pixels ahead to detect child Wall entity colliders
+    const ray = new Ray(this.pos, dir);
+    const hits = engine.currentScene.physics.rayCast(ray, {
+      maxDistance: this.tileSize,
+      searchAllColliders: true,
+    });
+
+    // Ignore hits originating from the actor itself
+    return hits.some(hit => hit.collider.owner !== this);
+  }
+
+  setAnimationBasedOnDirection(dir: Vector) {
+    if (this.isMoving) {
+      if (dir.x > 0) this.get(AnimationComponent).set("WalkRight");
+      else if (dir.x < 0) this.get(AnimationComponent).set("WalkLeft");
+      else if (dir.y > 0) this.get(AnimationComponent).set("WalkDown");
+      else if (dir.y < 0) this.get(AnimationComponent).set("WalkUp");
+    } else {
+      if (this.directionFacing.equals(Vector.Right)) this.get(AnimationComponent).set("IdleRight");
+      else if (this.directionFacing.equals(Vector.Left)) this.get(AnimationComponent).set("IdleLeft");
+      else if (this.directionFacing.equals(Vector.Down)) this.get(AnimationComponent).set("IdleDown");
+      else if (this.directionFacing.equals(Vector.Up)) this.get(AnimationComponent).set("IdleUp");
+    }
+  }
+}

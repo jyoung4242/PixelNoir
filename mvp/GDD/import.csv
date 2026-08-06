@@ -1,0 +1,15 @@
+Title,Content,Deck,Status,Priority,Effort
+"GDD Spec: Pixel Noir Core Pillars","Design pillars reference: 1. Investigation over combat. 2. Every Clue Is True. 3. High-stakes manual deduction. 4. Replayability through procedural logic.","[DOC] Specifications","Doc Card","Normal",1
+"Engine: Master Time Budget & Clock","Implement 72-hour case deadline counter. Action actions cost fixed time: District travel (15m), Object Search (30m), Interview (30m), Interrogation (60m).","[SYS] Core Systems","Default","High",5
+"Engine: Universal Rest/Wait Mechanic","Create UI action to rest in 15-minute increments anywhere in the world to advance time and meet NPC schedule windows.","[SYS] Core Systems","Default","Normal",2
+"Engine: Detective Reputation Tracking","Track global reputation. Degrade reputation on case timeout or lost interrogation. Reputation alters NPC narrative responses and baseline composure.","[SYS] Core Systems","Default","High",3
+"Engine: Activity-Based Perk Triggers","Implement event triggers for skill usage counts (searches, interviews). Automatically award perks (e.g., Forensic Efficiency) when thresholds are hit.","[SYS] Core Systems","Default","Normal",3
+"Combat: Interrogation Turn Machine","Build turn-based state machine tracking Suspect Resolve (Enemy HP) and Detective Composure (Player HP).","[INT] Interrogation","Default","Critical",8
+"Combat: Suspect Psychological Stances","Implement Guarded (50% Press resistance), Rattled (2x Press damage), and Cornered stance modifiers.","[INT] Interrogation","Default","High",3
+"Combat: Coffee Inventory & Consumption","Implement inventory item usage in combat restoring Composure: Instant Coffee (+20%), Drip Coffee (+50%), Double Espresso (+100%).","[INT] Interrogation","Default","Normal",2
+"Combat: Lockout & 24h Retry Cooldown","When player Composure hits 0 or player concedes, apply a 24-hour interaction cooldown on the NPC and degrade player reputation.","[INT] Interrogation","Default","High",3
+"UI: Pokémon-Style Interrogation HUD","Render suspect sprite/resolve bar, detective composure bar, status badges, and 4-slot menu (Tactics, Present Evidence, Coffee, Concede).","[UI] User Interface","Default","Critical",5
+"UI: Integrated Clue Journal Overlay","Build horizontal slide-in overlay during interrogation for selecting evidence. Differentiate World Facts [!] and NPC Claims [?].","[UI] User Interface","Default","Critical",5
+"UI: Interactive Logic Grid Matrix","Render dynamic workspace grid for facts. Support manual tagging of Direct Affirmation [✓] and Direct Negation [x].","[UI] User Interface","Default","High",8
+"Content: MVP Town Map & 10 NPC Schedules","Create small town district layout with pathfinding nodes and 24-hour routine schedules for 8–12 NPCs.","[CASE] MVP Content","Default","High",5
+"Content: Case 01 Handcrafted Logic Tree","Draft 1 complete mystery case containing physical evidence, suspect lies, alibis, and single deterministic solution path.","[CASE] MVP Content","Default","Critical",5
