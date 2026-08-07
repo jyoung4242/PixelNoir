@@ -4,6 +4,8 @@ import { StaticMap } from "../Actors/staticMap";
 import { initPlayerInScene, isDetective } from "../Lib/utils";
 import { Resources } from "../resources";
 import { TransitionContext } from "../types";
+import { clockManager } from "../main";
+import { ClockUI } from "../UI/ClockUI";
 
 export class PIOffice extends Scene<TransitionContext> {
   name = "PIOffice";
@@ -59,6 +61,8 @@ export class PIOffice extends Scene<TransitionContext> {
       },
     });
     this.add(this.overworldTrigger);
+    //UI clock
+    this.add(new ClockUI());
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {

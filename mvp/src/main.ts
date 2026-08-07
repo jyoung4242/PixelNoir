@@ -11,14 +11,16 @@ import { Warehouse } from "./Scenes/Warehouse";
 //@ts-expect-error
 import "./style.css";
 
-import { Engine, DisplayMode, vec, FadeInOut, Color, Vector } from "excalibur";
+import { Engine, DisplayMode, vec, FadeInOut, Color, Vector, PreUpdateEvent } from "excalibur";
 import { TransitionContext } from "./types";
+import { ClockManager } from "./Lib/ClockManager";
 
 const game = new Engine({
   width: 800, // the width of the canvas
   height: 600, // the height of the canvas
   displayMode: DisplayMode.Fixed, // the display mode
   pixelArt: true,
+  backgroundColor: Color.Black,
   scenes: {
     Overworld: {
       scene: new OverWorld(),
@@ -55,6 +57,14 @@ await game.start(loader);
 initializeInputMappings(game);
 initializeGlobalEvents();
 
+export const clockManager = new ClockManager();
+
 export const player: Detective = new Detective(vec(5, 5));
 Object.assign(game.currentScene, { name: "root" });
 game.goToScene<TransitionContext>("Overworld", { sceneActivationData: { player, facing: Vector.Down, leavingScene: "root" } });
+
+const preUpdateHandler = (evt: PreUpdateEvent<Engine>) => {
+  clockManager.update(evt.elapsed);
+};
+
+game.on("preupdate", preUpdateHandler);

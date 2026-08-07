@@ -189,7 +189,6 @@ export class LightingSystem extends System {
       });
       scene.add(this.lightingEntity);
     }
-
     this.lightingEntity.graphics.use(this.lightingCanvas);
   }
 

@@ -10,6 +10,13 @@ import PIofficeLower from "./Assets/PIofficeLower.png";
 import warehouseUpper from "./Assets/warehouseUpper.png";
 import warehouseLower from "./Assets/warehouseLower.png";
 
+import clockCover from "./Assets/Clock/cosmetic cover sans cog.png";
+import dayNightDisc from "./Assets/Clock/day_night_disck.png";
+import hourHand from "./Assets/Clock/hour hand.png";
+import minHand from "./Assets/Clock/min hand.png";
+import cog from "./Assets/Clock/cog.png";
+import clockFace from "./Assets/Clock/clock_face.png";
+
 export const Resources = {
   detective: new ImageSource(detective),
   upper: new ImageSource(upper),
@@ -20,6 +27,12 @@ export const Resources = {
   PIofficeLower: new ImageSource(PIofficeLower),
   warehouseUpper: new ImageSource(warehouseUpper),
   warehouseLower: new ImageSource(warehouseLower),
+  clockCover: new ImageSource(clockCover),
+  dayNightDisc: new ImageSource(dayNightDisc),
+  hourHand: new ImageSource(hourHand),
+  minHand: new ImageSource(minHand),
+  cog: new ImageSource(cog),
+  clockFace: new ImageSource(clockFace),
 };
 
 export const loader = new Loader();

@@ -4,6 +4,10 @@ import { Resources } from "../resources";
 import { Detective } from "../Actors/detective";
 import { initPlayerInScene, isDetective } from "../Lib/utils";
 import { TransitionContext } from "../types";
+import { clockManager } from "../main";
+import { ClockUI } from "../UI/ClockUI";
+import { LightingSystem } from "../Lib/Lighting";
+import { LightingActor } from "../Actors/lightingActor";
 
 export class OverWorld extends Scene<TransitionContext> {
   name = "Overworld";
@@ -11,6 +15,7 @@ export class OverWorld extends Scene<TransitionContext> {
   barTrigger: Trigger | undefined = undefined;
   warehouseTrigger: Trigger | undefined = undefined;
   PIofficeTrigger: Trigger | undefined = undefined;
+  lighting: LightingSystem | undefined = undefined;
 
   player: Detective | undefined = undefined;
 
@@ -108,6 +113,16 @@ export class OverWorld extends Scene<TransitionContext> {
       },
     });
     this.add(this.PIofficeTrigger);
+
+    //UI clock
+    this.add(new ClockUI());
+
+    this.lighting = new LightingSystem({
+      scene: this,
+      engine: engine,
+    });
+    this.world.add(this.lighting);
+    // this.world.add(new LightingActor());
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {

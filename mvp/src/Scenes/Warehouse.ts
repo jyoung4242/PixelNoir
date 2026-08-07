@@ -4,6 +4,8 @@ import { StaticMap } from "../Actors/staticMap";
 import { isDetective, initPlayerInScene } from "../Lib/utils";
 import { Resources } from "../resources";
 import { TransitionContext } from "../types";
+import { clockManager } from "../main";
+import { ClockUI } from "../UI/ClockUI";
 
 export class Warehouse extends Scene {
   name = "Warehouse";
@@ -56,6 +58,8 @@ export class Warehouse extends Scene {
       },
     });
     this.add(this.overworldTrigger);
+    //UI clock
+    this.add(new ClockUI());
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {

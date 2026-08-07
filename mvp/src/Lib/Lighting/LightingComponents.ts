@@ -17,6 +17,10 @@ export class DarknessComponent extends Component {
   ) {
     super();
   }
+
+  updateColor(color: Color) {
+    this.color = color;
+  }
 }
 
 /**

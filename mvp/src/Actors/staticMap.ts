@@ -9,7 +9,9 @@ import {
   Shape,
   vec,
   Sprite,
+  Color,
 } from "excalibur";
+import { DarknessComponent, AmbientLightComponent } from "../Lib/Lighting";
 
 interface StaticMapConfig {
   width: number;
@@ -26,6 +28,8 @@ interface WallConfig {
 }
 
 export class StaticMap extends Actor {
+  darkness: DarknessComponent | undefined = undefined;
+  ambient: AmbientLightComponent | undefined = undefined;
   upper: StaticMap | undefined = undefined;
   constructor(public config: StaticMapConfig) {
     super({ width: config.width, height: config.height, z: config.zIndex, anchor: vec(0, 0) });
@@ -54,6 +58,18 @@ export class StaticMap extends Actor {
       let wall = new Wall(wallPos);
       this.addChild(wall);
     }
+    this.darkness = new DarknessComponent(
+      Color.fromRGB(5, 5, 20),
+      0.9,
+      this.width, // ← match your room width
+      this.height, // ← match your room height
+    );
+    this.ambient = new AmbientLightComponent(
+      Color.fromHex("#d8e2ec"), // cool ambient
+      0.05,
+    );
+    this.addComponent(this.darkness);
+    this.addComponent(this.ambient);
   }
 }
 
