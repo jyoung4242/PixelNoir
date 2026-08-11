@@ -1,9 +1,7 @@
 // main.ts
 import { Detective } from "./Actors/detective";
-import { StaticMap } from "./Actors/staticMap";
-import { initializeGlobalEvents } from "./Lib/GlobalEvents";
 import { initializeInputMappings } from "./Lib/InputMapper";
-import { loader, Resources } from "./resources";
+import { loader } from "./resources";
 import { Bar } from "./Scenes/Bar";
 import { OverWorld } from "./Scenes/Overworld";
 import { PIOffice } from "./Scenes/PIOffice";
@@ -11,8 +9,10 @@ import { Warehouse } from "./Scenes/Warehouse";
 //@ts-expect-error
 import "./style.css";
 
-import { Engine, DisplayMode, vec, FadeInOut, Color, Vector } from "excalibur";
+import { Engine, DisplayMode, vec, FadeInOut, Color, Vector, PreUpdateEvent } from "excalibur";
 import { TransitionContext } from "./types";
+import { InitializeGameNPCs, npcManager } from "./Lib/NPCManager";
+import { ClockManager } from "./Lib/ClockManager";
 
 const game = new Engine({
   width: 800, // the width of the canvas
@@ -53,8 +53,25 @@ const game = new Engine({
 
 await game.start(loader);
 initializeInputMappings(game);
-initializeGlobalEvents();
+InitializeGameNPCs();
+
+export const clockManager = new ClockManager();
 
 export const player: Detective = new Detective(vec(5, 5));
 Object.assign(game.currentScene, { name: "root" });
 game.goToScene<TransitionContext>("Overworld", { sceneActivationData: { player, facing: Vector.Down, leavingScene: "root" } });
+
+const preUpdateHandler = (evt: PreUpdateEvent<Engine>) => {
+  clockManager.update(evt.elapsed);
+  console.log(clockManager.clock.timeString);
+
+  npcManager.updateNPCs(
+    evt.elapsed,
+    clockManager.clock.timeString,
+    new Set(), // Story points
+    game.currentScene,
+    game.currentSceneName,
+  );
+};
+
+game.on("preupdate", preUpdateHandler);

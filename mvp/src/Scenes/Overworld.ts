@@ -4,6 +4,7 @@ import { Resources } from "../resources";
 import { Detective } from "../Actors/detective";
 import { initPlayerInScene, isDetective } from "../Lib/utils";
 import { TransitionContext } from "../types";
+import { npcManager } from "../Lib/NPCManager";
 
 export class OverWorld extends Scene<TransitionContext> {
   name = "Overworld";
@@ -112,10 +113,23 @@ export class OverWorld extends Scene<TransitionContext> {
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    console.log(npcsToLoad);
+    npcsToLoad.forEach(n => this.add(n));
+    this.addAllActorsBack();
   }
 
   onDeactivate(ctx: SceneActivationContext) {
     this.remove(this.player!);
     this.player = undefined;
+    this.clear();
+  }
+
+  addAllActorsBack() {
+    if (!this.map || !this.barTrigger || !this.warehouseTrigger || !this.PIofficeTrigger) throw new Error("whoops");
+    this.add(this.map);
+    this.add(this.barTrigger);
+    this.add(this.warehouseTrigger);
+    this.add(this.PIofficeTrigger);
   }
 }

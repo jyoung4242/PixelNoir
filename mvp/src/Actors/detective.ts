@@ -1,79 +1,3 @@
-// import { Actor, CollisionType, Engine, vec, Vector } from "excalibur";
-// import { DetectiveAnimations } from "../Animations/Detective";
-// import { AnimationComponent } from "../Components/animation";
-// import { GlobalEvents } from "../Lib/GlobalEvents";
-
-// export class Detective extends Actor {
-//   isMoving: boolean = false;
-//   directionFacing: Vector = Vector.Down;
-//   speed: number = 50;
-
-//   constructor() {
-//     super({
-//       pos: vec(123, 185),
-//       width: 16,
-//       height: 16,
-//       anchor: vec(0.5, 1.0),
-//       z: 1,
-//       collisionType: CollisionType.Active,
-//     });
-//   }
-
-//   onInitialize(engine: Engine) {
-//     this.addComponent(new AnimationComponent(DetectiveAnimations));
-//     this.get(AnimationComponent).set("IdleDown");
-//     engine.currentScene.camera.strategy.lockToActor(this);
-//     engine.currentScene.camera.zoom = 3.5;
-
-//     // setup global events
-//     GlobalEvents.on("player-move", dir => {
-//       if (dir.x > 0) {
-//         this.directionFacing = Vector.Right;
-//         this.vel.x = this.speed;
-//       } else if (dir.x < 0) {
-//         this.directionFacing = Vector.Left;
-//         this.vel.x = -this.speed;
-//       } else if (dir.y > 0) {
-//         this.directionFacing = Vector.Down;
-//         this.vel.y = this.speed;
-//       } else if (dir.y < 0) {
-//         this.directionFacing = Vector.Up;
-//         this.vel.y = -this.speed;
-//       } else {
-//         this.vel = Vector.Zero;
-//       } // Stop movement if no direction
-//     });
-//   }
-
-//   onPreUpdate(engine: Engine, delta: number) {
-//     this.isMoving = this.vel.equals(Vector.Zero) === true ? false : true;
-//     this.setAnimationBasedOnDirection(this.vel);
-//   }
-
-//   setAnimationBasedOnDirection(dir: Vector) {
-//     if (this.isMoving) {
-//       if (dir.x > 0) {
-//         this.get(AnimationComponent).set("WalkRight");
-//       } else if (dir.x < 0) {
-//         this.get(AnimationComponent).set("WalkLeft");
-//       } else if (dir.y > 0) {
-//         this.get(AnimationComponent).set("WalkDown");
-//       } else if (dir.y < 0) {
-//         this.get(AnimationComponent).set("WalkUp");
-//       }
-//     } else {
-//       if (this.directionFacing.equals(Vector.Right)) {
-//         this.get(AnimationComponent).set("IdleRight");
-//       } else if (this.directionFacing.equals(Vector.Left)) {
-//         this.get(AnimationComponent).set("IdleLeft");
-//       } else if (this.directionFacing.equals(Vector.Down)) {
-//         this.get(AnimationComponent).set("IdleDown");
-//       } else if (this.directionFacing.equals(Vector.Up)) {
-//         this.get(AnimationComponent).set("IdleUp");
-//       }
-//     }
-//   }
-// }
 import { Actor, CollisionType, Engine, Ray, Trigger, vec, Vector } from "excalibur";
 import { DetectiveAnimations } from "../Animations/Detective";
 import { AnimationComponent } from "../Components/animation";
@@ -111,8 +35,8 @@ export class Detective extends Actor {
       Math.floor(this.pos.y / this.tileSize) * this.tileSize + this.tileSize / 2,
     );
 
-    GlobalEvents.on("player-move", dir => {
-      this.currentDirection = dir;
+    GlobalEvents.on("player-move", data => {
+      this.currentDirection = data;
     });
   }
 
@@ -134,6 +58,7 @@ export class Detective extends Actor {
     const deltaSeconds = delta / 1000;
 
     // Attempt next grid step if stationary
+
     if (!this.isMoving && !this.currentDirection.equals(Vector.Zero)) {
       this.tryMove(engine, this.currentDirection);
     }
@@ -162,7 +87,6 @@ export class Detective extends Actor {
 
   private tryMove(engine: Engine, dir: Vector) {
     this.directionFacing = dir;
-
     // Check if Wall colliders occupy the target step destination
     if (this.isTileBlocked(engine, dir)) {
       this.isMoving = false;

@@ -4,6 +4,7 @@ import { StaticMap } from "../Actors/staticMap";
 import { initPlayerInScene, isDetective } from "../Lib/utils";
 import { Resources } from "../resources";
 import { TransitionContext } from "../types";
+import { npcManager } from "../Lib/NPCManager";
 
 export class PIOffice extends Scene<TransitionContext> {
   name = "PIOffice";
@@ -37,7 +38,6 @@ export class PIOffice extends Scene<TransitionContext> {
       lower: Resources.PIofficeLower.toSprite(),
       zIndex: 0,
     });
-    this.add(this.map);
 
     //add scene triggers
     this.overworldTrigger = new Trigger({
@@ -58,15 +58,25 @@ export class PIOffice extends Scene<TransitionContext> {
         }
       },
     });
-    this.add(this.overworldTrigger);
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    console.log(npcsToLoad);
+    npcsToLoad.forEach(n => this.add(n));
+    this.addAllActorsBack();
   }
 
   onDeactivate(ctx: SceneActivationContext) {
     this.remove(this.player!);
     this.player = undefined;
+    this.clear();
+  }
+
+  addAllActorsBack() {
+    if (!this.map || !this.overworldTrigger) throw new Error("whoops");
+    this.add(this.map);
+    this.add(this.overworldTrigger);
   }
 }

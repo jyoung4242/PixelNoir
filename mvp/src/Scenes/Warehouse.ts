@@ -4,6 +4,7 @@ import { StaticMap } from "../Actors/staticMap";
 import { isDetective, initPlayerInScene } from "../Lib/utils";
 import { Resources } from "../resources";
 import { TransitionContext } from "../types";
+import { npcManager } from "../Lib/NPCManager";
 
 export class Warehouse extends Scene {
   name = "Warehouse";
@@ -34,7 +35,6 @@ export class Warehouse extends Scene {
       lower: Resources.warehouseLower.toSprite(),
       zIndex: 0,
     });
-    this.add(this.map);
 
     //add scene triggers
     this.overworldTrigger = new Trigger({
@@ -55,15 +55,25 @@ export class Warehouse extends Scene {
         }
       },
     });
-    this.add(this.overworldTrigger);
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    console.log(npcsToLoad);
+    npcsToLoad.forEach(n => this.add(n));
+    this.addAllActorsBack();
   }
 
   onDeactivate(ctx: SceneActivationContext) {
     this.remove(this.player!);
     this.player = undefined;
+    this.clear();
+  }
+
+  addAllActorsBack() {
+    if (!this.map || !this.overworldTrigger) throw new Error("whoops");
+    this.add(this.map);
+    this.add(this.overworldTrigger);
   }
 }

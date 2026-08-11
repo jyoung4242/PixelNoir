@@ -13,3 +13,34 @@ export interface TransitionContext {
   facing: Vector;
   leavingScene: SceneNames;
 }
+
+export interface ScheduleTrigger {
+  /** Time in 24h format (e.g. "08:00") or game ticks */
+  time: string;
+  storyPoints?: string[];
+}
+
+export interface ScheduledRoutine {
+  id: string;
+  /** Target map for this routine. Overrides defaultMap if specified */
+  mapId?: string;
+  /** Spawn tile on target map when this routine begins off-scene */
+  loop?: boolean;
+  startTile?: Vector;
+  trigger: ScheduleTrigger;
+  sequence: ActionStep[];
+}
+
+export interface ActionStep {
+  /** Corresponds to your registered commands (e.g., "moveActor", "wait", "playAnim") */
+  type: string;
+  /** Parameters fed directly to your Excalibur action executor */
+  args: Record<string, any>;
+}
+
+export type NpcManifest = {
+  name: string;
+  defaultMap: string;
+  defaultTile: Vector;
+  routines: ScheduledRoutine[];
+};
