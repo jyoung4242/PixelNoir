@@ -1,0 +1,12 @@
+"filename", "language", "JSON with Comments", "JavaScript", "CSV", "Markdown", "JSON", "HTML", "Batch", "comment", "blank", "total"
+"c:\programming\PixelNoir\mvp\ExcaliburStarterWLintingNoPeasy.bat", "Batch", 0, 0, 0, 0, 0, 0, -340, -34, -48, -422
+"c:\programming\PixelNoir\mvp\GDD\GDD v2.md", "Markdown", 0, 0, 0, -108, 0, 0, 0, 0, -64, -172
+"c:\programming\PixelNoir\mvp\GDD\GDD.md", "Markdown", 0, 0, 0, -410, 0, 0, 0, 0, -301, -711
+"c:\programming\PixelNoir\mvp\GDD\import.csv", "CSV", 0, 0, -15, 0, 0, 0, 0, 0, 0, -15
+"c:\programming\PixelNoir\mvp\eslint.config.js", "JavaScript", 0, -22, 0, 0, 0, 0, 0, -2, -2, -26
+"c:\programming\PixelNoir\mvp\index.html", "HTML", 0, 0, 0, 0, 0, -20, 0, 0, -4, -24
+"c:\programming\PixelNoir\mvp\package-lock.json", "JSON", 0, 0, 0, 0, -1301, 0, 0, 0, -1, -1302
+"c:\programming\PixelNoir\mvp\package.json", "JSON", 0, 0, 0, 0, -25, 0, 0, 0, -1, -26
+"c:\programming\PixelNoir\mvp\tsconfig.json", "JSON with Comments", -18, 0, 0, 0, 0, 0, 0, 0, -1, -19
+"c:\programming\PixelNoir\mvp\vite.config.js", "JavaScript", 0, -8, 0, 0, 0, 0, 0, 0, -2, -10
+"Total", "-", -18, -30, -15, -518, -1326, -20, -340, -36, -424, -2727

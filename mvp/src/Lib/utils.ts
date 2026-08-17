@@ -1,7 +1,6 @@
 import { Entity, Scene, SceneActivationContext, vec, Vector } from "excalibur";
 import { Detective } from "../Actors/detective";
 import { GameScenes, TransitionContext } from "../types";
-import { AnimationComponent } from "../Components/animation";
 
 const sceneLocationMap: Record<string, Record<string, Vector>> = {
   Overworld: {

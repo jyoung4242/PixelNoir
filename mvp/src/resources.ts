@@ -9,6 +9,8 @@ import PIofficeUpper from "./Assets/PIofficeUpper.png";
 import PIofficeLower from "./Assets/PIofficeLower.png";
 import warehouseUpper from "./Assets/warehouseUpper.png";
 import warehouseLower from "./Assets/warehouseLower.png";
+import npcChef from "./Assets/chef.png";
+import npcKaren from "./Assets/npc1.png";
 
 export const Resources = {
   detective: new ImageSource(detective),
@@ -20,6 +22,8 @@ export const Resources = {
   PIofficeLower: new ImageSource(PIofficeLower),
   warehouseUpper: new ImageSource(warehouseUpper),
   warehouseLower: new ImageSource(warehouseLower),
+  npcChef: new ImageSource(npcChef),
+  npcKaren: new ImageSource(npcKaren),
 };
 
 export const loader = new Loader();

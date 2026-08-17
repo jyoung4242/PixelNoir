@@ -1,11 +1,10 @@
-import * as ex from "excalibur";
+import { EventEmitter, Vector } from "excalibur";
 
-export const GlobalEvents = new ex.EventEmitter<CustomEvents>();
-export type CustomEvents = {
-  "player-move": ex.Vector;
-};
-
-export function initializeGlobalEvents() {
-  // Example of how to listen for a global event
-  GlobalEvents.on("player-move", vector => {});
+export interface GlobalEventMap {
+  "player-move": Vector;
+  // --- Cutscenes (Session 10 — CutsceneManager) ---
+  "cutscene:started": { cutsceneId: string };
+  "cutscene:ended": { cutsceneId: string };
 }
+
+export const GlobalEvents = new EventEmitter<GlobalEventMap>();
