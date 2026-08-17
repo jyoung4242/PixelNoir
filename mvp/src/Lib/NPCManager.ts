@@ -1,9 +1,12 @@
-import { Actor, Animation, Engine, Scene, vec, Vector } from "excalibur";
+import { Actor, Animation, CollisionType, Engine, Scene, vec, Vector } from "excalibur";
 import { ActionStep, NpcManifest } from "../types";
 import { chefManifest } from "../Content/NPCs/chef";
 import { ChefAnimations } from "../Animations/Chef";
 import { AnimationComponent } from "../Components/animation";
 import { ActionRegistry } from "../Actions/actionRegistry";
+import { karenManifest } from "../Content/NPCs/Karen";
+import { karenAnimations } from "../Animations/Karen";
+import { CutSceneParticipantComponent } from "./cutscenes/CutScenes";
 
 /**
  * This is for npc registration
@@ -215,11 +218,7 @@ class NPCManager {
   /** Updates internal state (tile position, scene map) when virtual steps complete */
   /** Updates internal state (tile position, scene map) when virtual steps complete */
   private applyStepVirtualEffects(npc: NPCData, step: ActionStep): void {
-    console.log(step.type);
-
-    console.log("[AR]", ActionRegistry);
     const actionDef = ActionRegistry[step.type];
-    console.log("[actiondef]", actionDef);
 
     if (actionDef?.virtualEffect) {
       actionDef.virtualEffect(npc, step.args);
@@ -235,6 +234,9 @@ export class NPCActor extends Actor {
   public readonly npcId: string;
   private currentStepIndex: number = -1;
   public currentScene = "root";
+  public interactionZone: Actor;
+  cutsceneComponent: CutSceneParticipantComponent;
+  private wasInCutscene: boolean = false; // Track previous frame cutscene state
 
   constructor(data: NPCData) {
     super({
@@ -251,9 +253,55 @@ export class NPCActor extends Actor {
     this.currentScene = data.currentScene;
     this.addComponent(new AnimationComponent(data.animations));
     this.get(AnimationComponent).set("IdleDown");
+
+    this.cutsceneComponent = new CutSceneParticipantComponent({ id: data.name });
+    this.addComponent(this.cutsceneComponent);
+
+    // Initialize Interaction Zone Child Actor
+    this.interactionZone = new Actor({
+      name: `${data.manifest.name}_InteractionZone`,
+      radius: 16,
+      anchor: Vector.Half,
+      collisionType: CollisionType.Passive,
+    });
+
+    // Optional event listeners for player detection
+    this.interactionZone.on("collisionstart", evt => {
+      if (evt.other.owner!.name === "Player") {
+        // Trigger interaction prompt or cutscene logic
+      }
+    });
+
+    this.interactionZone.on("collisionend", evt => {
+      if (evt.other.owner!.name === "Player") {
+        // Hide prompt or clear interaction availability
+      }
+    });
+
+    // Attach child actor to the parent NPCActor
+    this.addChild(this.interactionZone);
+  }
+
+  getCurrentTile(): Vector {
+    let temp = this.pos.sub(vec(8, 8));
+    let tile = this.pos.scale(vec(1 / 16, 1 / 16));
+    return tile;
   }
 
   public onPreUpdate(engine: Engine, delta: number): void {
+    const isCutsceneActive = this.cutsceneComponent?.isPlaying ?? false;
+
+    // 1. Currently in a cutscene -> pause routine execution
+    if (isCutsceneActive) {
+      this.wasInCutscene = true;
+      return;
+    }
+
+    if (this.wasInCutscene) {
+      this.wasInCutscene = false;
+      this.currentStepIndex = -1; // Force index inequality check below
+    }
+
     const data = npcManager.npcs.get(this.npcId);
     if (!data || !data.activeRoutineId) return;
 
@@ -272,7 +320,6 @@ export class NPCActor extends Actor {
 
     const actionDef = ActionRegistry[step.type];
     if (actionDef?.execute) {
-      // Execute command and automatically advance step on completion
       actionDef.execute(this, step.args, () => this.advanceToNextStep());
     } else {
       console.warn(`Unrecognized action type '${step.type}' in manifest.`);
@@ -280,7 +327,6 @@ export class NPCActor extends Actor {
     }
   }
 
-  // NPCManager.ts -> NPCActor
   private advanceToNextStep(): void {
     const data = npcManager.npcs.get(this.npcId);
     if (!data || !data.activeRoutineId) return;
@@ -290,7 +336,6 @@ export class NPCActor extends Actor {
 
     const isLooping = routine.loop ?? true;
 
-    // Only advance if within bounds or looping
     if (data.currentStepIndex < routine.sequence.length) {
       data.currentStepIndex++;
       data.stepTimeElapsed = 0;
@@ -300,7 +345,6 @@ export class NPCActor extends Actor {
       if (isLooping) {
         data.currentStepIndex = 0;
       } else {
-        // Keep step index at array length so onPreUpdate doesn't trigger new actions
         data.currentStepIndex = routine.sequence.length;
       }
     }
@@ -318,7 +362,12 @@ export function InitializeGameNPCs() {
     animations: ChefAnimations,
   });
 
-  console.log(npcManager.npcs);
+  npcManager.registerNPC({
+    id: generateNpcGuid(),
+    name: "Karen",
+    manifest: karenManifest,
+    animations: karenAnimations,
+  });
 }
 
 /**

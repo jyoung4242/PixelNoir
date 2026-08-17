@@ -1,4 +1,4 @@
-import { CutsceneStep } from "../types";
+import { Action, nextActionId } from "excalibur";
 
 /**
  * Loose structural interface rather than importing AnimationComponent<T>
@@ -16,9 +16,10 @@ export interface AnimatableActor {
  * Animations have no native "done" signal the way moveTo/toPromise does,
  * so this step just sets the animation once and holds for durationMs.
  */
-export class AnimateAction implements CutsceneStep {
+export class AnimateAction implements Action {
   private _applied = false;
   private _elapsed = 0;
+  id = nextActionId();
 
   constructor(
     private readonly _actor: AnimatableActor,

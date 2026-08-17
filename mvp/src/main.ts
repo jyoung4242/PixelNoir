@@ -63,7 +63,7 @@ game.goToScene<TransitionContext>("Overworld", { sceneActivationData: { player, 
 
 const preUpdateHandler = (evt: PreUpdateEvent<Engine>) => {
   clockManager.update(evt.elapsed);
-  console.log(clockManager.clock.timeString);
+  // console.log(clockManager.clock.timeString);
 
   npcManager.updateNPCs(
     evt.elapsed,

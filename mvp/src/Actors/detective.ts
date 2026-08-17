@@ -2,6 +2,7 @@ import { Actor, CollisionType, Engine, Ray, Trigger, vec, Vector } from "excalib
 import { DetectiveAnimations } from "../Animations/Detective";
 import { AnimationComponent } from "../Components/animation";
 import { GlobalEvents } from "../Lib/GlobalEvents";
+import { CutSceneParticipantComponent } from "../Lib/cutscenes/CutScenes";
 
 export class Detective extends Actor {
   tileSize: number = 16;
@@ -10,6 +11,8 @@ export class Detective extends Actor {
   directionFacing: Vector = Vector.Down;
   currentDirection: Vector = Vector.Zero;
   targetPos: Vector | null = null;
+  // Cutscene tracking component reference
+  public cutsceneComponent: CutSceneParticipantComponent;
 
   constructor(tilpos: Vector) {
     super({
@@ -21,6 +24,9 @@ export class Detective extends Actor {
       collisionType: CollisionType.Active,
     });
     this.graphics.offset = vec(0, -6); // Reset graphics offset to align with anchor
+    // Initialize Cutscene Participant Component with identifier
+    this.cutsceneComponent = new CutSceneParticipantComponent({ id: "Detective" });
+    this.addComponent(this.cutsceneComponent);
   }
 
   onInitialize(engine: Engine) {
@@ -54,34 +60,89 @@ export class Detective extends Actor {
     }
   }
 
+  // onPreUpdate(engine: Engine, delta: number) {
+  //   // ------------------------------------------------------------------------
+  //   // Cutscene Guard: Disable player inputs & movement during cutscenes
+  //   // ------------------------------------------------------------------------
+  //   if (this.cutsceneComponent?.isPlaying) {
+  //     // If mid-tile step when cutscene starts, snap to completed position
+  //     if (this.isMoving && this.targetPos) {
+  //       this.pos = this.targetPos;
+  //       this.isMoving = false;
+  //       this.targetPos = null;
+  //     }
+
+  //     // Force idle animation based on last facing direction
+  //     this.setAnimationBasedOnDirection(Vector.Zero);
+  //     return;
+  //   }
+  //   const deltaSeconds = delta / 1000;
+
+  //   // Attempt next grid step if stationary
+
+  //   if (!this.isMoving && !this.currentDirection.equals(Vector.Zero)) {
+  //     this.tryMove(engine, this.currentDirection);
+  //   }
+
+  //   // Process movement along the step
+  //   if (this.isMoving && this.targetPos) {
+  //     const step = this.directionFacing.scale(this.speed * deltaSeconds);
+  //     const distanceToTarget = this.targetPos.sub(this.pos);
+
+  //     if (step.magnitude >= distanceToTarget.magnitude) {
+  //       this.pos = this.targetPos; // Lock cleanly to target tile center
+
+  //       // Chain immediately into the next tile step if directional key is still held
+  //       if (!this.currentDirection.equals(Vector.Zero)) {
+  //         this.tryMove(engine, this.currentDirection);
+  //       } else {
+  //         this.isMoving = false;
+  //         this.targetPos = null;
+  //         this.setAnimationBasedOnDirection(Vector.Zero);
+  //       }
+  //     } else {
+  //       this.pos = this.pos.add(step);
+  //     }
+  //   }
+  // }
   onPreUpdate(engine: Engine, delta: number) {
     const deltaSeconds = delta / 1000;
+    const inCutscene = this.cutsceneComponent?.isPlaying ?? false;
 
-    // Attempt next grid step if stationary
-
-    if (!this.isMoving && !this.currentDirection.equals(Vector.Zero)) {
-      this.tryMove(engine, this.currentDirection);
-    }
-
-    // Process movement along the step
+    // 1. If currently mid-step, finish moving to targetPos first
     if (this.isMoving && this.targetPos) {
       const step = this.directionFacing.scale(this.speed * deltaSeconds);
       const distanceToTarget = this.targetPos.sub(this.pos);
 
       if (step.magnitude >= distanceToTarget.magnitude) {
-        this.pos = this.targetPos; // Lock cleanly to target tile center
+        this.pos = this.targetPos; // Clean grid alignment lock
 
-        // Chain immediately into the next tile step if directional key is still held
-        if (!this.currentDirection.equals(Vector.Zero)) {
-          this.tryMove(engine, this.currentDirection);
-        } else {
+        // Stop moving if cutscene is active OR player released controls
+        if (inCutscene || this.currentDirection.equals(Vector.Zero)) {
           this.isMoving = false;
           this.targetPos = null;
           this.setAnimationBasedOnDirection(Vector.Zero);
+        } else {
+          // Chain into next tile step only if input is held and NO cutscene is active
+          this.tryMove(engine, this.currentDirection);
         }
       } else {
         this.pos = this.pos.add(step);
       }
+
+      // Keep updating until targetPos is reached
+      return;
+    }
+
+    // 2. Block starting new player-driven tile steps during cutscenes
+    if (inCutscene) {
+      this.setAnimationBasedOnDirection(Vector.Zero);
+      return;
+    }
+
+    // 3. Normal stationary input check
+    if (!this.currentDirection.equals(Vector.Zero)) {
+      this.tryMove(engine, this.currentDirection);
     }
   }
 

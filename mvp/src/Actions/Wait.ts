@@ -32,8 +32,8 @@ export class Wait implements Action {
     if (!this._started) {
       this._started = true;
       this._currentTime = 0;
+
       this.ac.set(`Idle${getAnimationKey(this.direction)}`);
-      console.log("running wait");
     }
 
     this._currentTime += elapsed;
@@ -41,16 +41,27 @@ export class Wait implements Action {
 }
 
 function getAnimationKey(dir: Vector): string {
-  switch (dir) {
-    case Vector.Down:
-      return "Down";
-    case Vector.Up:
-      return "Up";
-    case Vector.Left:
-      return "Left";
-    case Vector.Right:
-      return "Right";
-    default:
-      return "Down";
+  // switch (dir) {
+  //   case Vector.Down:
+  //     return "Down";
+  //   case Vector.Up:
+  //     return "Up";
+  //   case Vector.Left:
+  //     return "Left";
+  //   case Vector.Right:
+  //     return "Right";
+  //   default:
+  //     return "Down";
+  // }
+  if (dir.equals(Vector.Down)) {
+    return "Down";
+  } else if (dir.equals(Vector.Up)) {
+    return "Up";
+  } else if (dir.equals(Vector.Left)) {
+    return "Left";
+  } else if (dir.equals(Vector.Right)) {
+    return "Right";
+  } else {
+    return "Down";
   }
 }

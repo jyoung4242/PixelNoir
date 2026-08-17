@@ -5,9 +5,12 @@ import { isDetective, initPlayerInScene } from "../Lib/utils";
 import { Resources } from "../resources";
 import { TransitionContext } from "../types";
 import { npcManager } from "../Lib/NPCManager";
+import { warehousegraph } from "../Graphs/warehouse";
+import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
 
 export class Warehouse extends Scene {
   name = "Warehouse";
+  graph = warehousegraph;
   map: StaticMap | undefined = undefined;
   player: Detective | undefined = undefined;
   overworldTrigger: Trigger | undefined = undefined;
@@ -16,6 +19,8 @@ export class Warehouse extends Scene {
   }
 
   onInitialize(engine: Engine) {
+    let CSsystem = new CutSceneSystem(this.world);
+    this.world.add(CSsystem);
     this.map = new StaticMap({
       width: 176,
       height: 224,
@@ -60,7 +65,6 @@ export class Warehouse extends Scene {
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
     let npcsToLoad = npcManager.getSceneNPCs(this.name);
-    console.log(npcsToLoad);
     npcsToLoad.forEach(n => this.add(n));
     this.addAllActorsBack();
   }

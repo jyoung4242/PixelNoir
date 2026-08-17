@@ -7,6 +7,23 @@ export const chefManifest: NpcManifest = {
   defaultTile: vec(9, 7),
   routines: [
     {
+      id: "exercise_astar",
+      mapId: "PIOffice",
+      trigger: { time: "12:05" },
+      loop: true,
+      sequence: [
+        { type: "followPath", args: { targetTile: vec(1, 4) } },
+        { type: "followPath", args: { targetTile: vec(7, 4) } },
+        { type: "followPath", args: { targetTile: vec(10, 6) } },
+        { type: "followPath", args: { targetTile: vec(3, 6) } },
+        { type: "wait", args: { duration: 50, dir: Vector.Down } },
+      ],
+    },
+  ],
+};
+
+/*
+ {
       id: "move_LR",
       mapId: "PIOffice",
       trigger: { time: "07:00" },
@@ -28,8 +45,7 @@ export const chefManifest: NpcManifest = {
         { type: "wait", args: { duration: 2000, dir: Vector.Down } },
       ],
     },
-
-    {
+ {
       id: "move_maps",
       mapId: "PIOffice",
       trigger: { time: "12:05" },
@@ -50,5 +66,5 @@ export const chefManifest: NpcManifest = {
       loop: false, // Prevents looping once the sequence reaches the end
       sequence: [{ type: "sceneSwitch", args: { targetScene: "Overworld", targetTile: vec(5, 10) } }],
     },
-  ],
-};
+
+*/

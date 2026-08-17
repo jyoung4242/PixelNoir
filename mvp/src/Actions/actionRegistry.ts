@@ -5,6 +5,7 @@ import { AnimationComponent } from "../Components/animation";
 import { Wait } from "./Wait";
 import { NPCData, NPCActor } from "../Lib/NPCManager";
 import { SwitchScene } from "./SwitchScene";
+import { FollowPath } from "./FollowPath";
 
 export type ActionCommandHandler = (actor: Actor, args: Record<string, any>, onComplete: () => void) => void;
 
@@ -58,6 +59,28 @@ export const ActionRegistry: Record<string, ActionDefinition> = {
       if (mapId) {
         npc.currentScene = mapId;
       }
+      if (args.targetTile) {
+        npc.virtualTile = args.targetTile;
+      } else if (args.x !== undefined && args.y !== undefined) {
+        npc.virtualTile = vec(args.x, args.y);
+      }
+    },
+  },
+  followPath: {
+    execute: (actor, args, onComplete) => {
+      const scene = actor.scene;
+      const animComponent = actor.get(AnimationComponent);
+      const targetTile = args.targetTile ?? vec(args.x ?? 0, args.y ?? 0);
+
+      if (!scene || !animComponent) {
+        onComplete();
+        return;
+      }
+
+      const action = new FollowPath(actor, scene, animComponent, targetTile);
+      actor.actions.runAction(action).callMethod(onComplete);
+    },
+    virtualEffect: (npc, args) => {
       if (args.targetTile) {
         npc.virtualTile = args.targetTile;
       } else if (args.x !== undefined && args.y !== undefined) {
