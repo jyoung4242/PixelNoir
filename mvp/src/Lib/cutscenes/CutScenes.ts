@@ -104,10 +104,33 @@ export class CutSceneSystem extends System {
   public update(elapsed: number): void {
     if (!this.engine) return;
 
+    // Auto-heal director on frame updates
+    this.ensureDirector();
+
     // If a running sequence has finished its actions, clean up state
     if (this.activeSequence && this.director.actions.getQueue().isComplete()) {
       this.finalizeCutScene();
     }
+  }
+
+  private ensureDirector(): CutSceneDirector {
+    const currentScene = this.engine?.currentScene ?? this.world?.scene;
+    if (!currentScene) return this.director;
+
+    // 1. Re-instantiate if destroyed during scene cleanup
+    if (this.director.isKilled()) {
+      this.director = new CutSceneDirector();
+    }
+
+    // 2. Re-parent to current scene graph if missing
+    if (!currentScene.entities.includes(this.director)) {
+      currentScene.add(this.director);
+    }
+
+    // 3. Sync active scene camera
+    this.camera = currentScene.camera;
+
+    return this.director;
   }
 
   // ==========================================
@@ -156,6 +179,8 @@ export class CutSceneSystem extends System {
 
   public async startCutScene(cutsceneId: string): Promise<void> {
     if (this.isPlaying) return;
+    // Guarantee director and camera are valid BEFORE sequence runs
+    this.ensureDirector();
 
     const manifest = this.registeredCutScenes.get(cutsceneId);
     if (!manifest) return;
@@ -233,7 +258,10 @@ export class CutSceneSystem extends System {
     // Wait Command
     this.registerCommand("wait", async (args, ctx) => {
       const { duration } = args;
+      console.log("delaying", duration, ctx.system.director.actions);
+
       await ctx.system.director.actions.delay(duration).toPromise();
+      console.log("delay complete");
     });
 
     // 3. Camera Shake: Clean and explicit

@@ -132,6 +132,7 @@ export class OverWorld extends Scene<TransitionContext> {
       },
     });
     this.add(this.cutsceneTrigger);
+    console.log(this.cutsceneTrigger);
 
     const testCutscene: CutsceneManifest = {
       id: "test",
@@ -176,10 +177,12 @@ export class OverWorld extends Scene<TransitionContext> {
   }
 
   addAllActorsBack() {
-    if (!this.map || !this.barTrigger || !this.warehouseTrigger || !this.PIofficeTrigger) throw new Error("whoops");
+    if (!this.map || !this.barTrigger || !this.warehouseTrigger || !this.PIofficeTrigger || !this.cutsceneTrigger)
+      throw new Error("whoops");
     this.add(this.map);
     this.add(this.barTrigger);
     this.add(this.warehouseTrigger);
     this.add(this.PIofficeTrigger);
+    this.add(this.cutsceneTrigger);
   }
 }
