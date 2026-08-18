@@ -60,51 +60,6 @@ export class Detective extends Actor {
     }
   }
 
-  // onPreUpdate(engine: Engine, delta: number) {
-  //   // ------------------------------------------------------------------------
-  //   // Cutscene Guard: Disable player inputs & movement during cutscenes
-  //   // ------------------------------------------------------------------------
-  //   if (this.cutsceneComponent?.isPlaying) {
-  //     // If mid-tile step when cutscene starts, snap to completed position
-  //     if (this.isMoving && this.targetPos) {
-  //       this.pos = this.targetPos;
-  //       this.isMoving = false;
-  //       this.targetPos = null;
-  //     }
-
-  //     // Force idle animation based on last facing direction
-  //     this.setAnimationBasedOnDirection(Vector.Zero);
-  //     return;
-  //   }
-  //   const deltaSeconds = delta / 1000;
-
-  //   // Attempt next grid step if stationary
-
-  //   if (!this.isMoving && !this.currentDirection.equals(Vector.Zero)) {
-  //     this.tryMove(engine, this.currentDirection);
-  //   }
-
-  //   // Process movement along the step
-  //   if (this.isMoving && this.targetPos) {
-  //     const step = this.directionFacing.scale(this.speed * deltaSeconds);
-  //     const distanceToTarget = this.targetPos.sub(this.pos);
-
-  //     if (step.magnitude >= distanceToTarget.magnitude) {
-  //       this.pos = this.targetPos; // Lock cleanly to target tile center
-
-  //       // Chain immediately into the next tile step if directional key is still held
-  //       if (!this.currentDirection.equals(Vector.Zero)) {
-  //         this.tryMove(engine, this.currentDirection);
-  //       } else {
-  //         this.isMoving = false;
-  //         this.targetPos = null;
-  //         this.setAnimationBasedOnDirection(Vector.Zero);
-  //       }
-  //     } else {
-  //       this.pos = this.pos.add(step);
-  //     }
-  //   }
-  // }
   onPreUpdate(engine: Engine, delta: number) {
     const deltaSeconds = delta / 1000;
     const inCutscene = this.cutsceneComponent?.isPlaying ?? false;
@@ -169,14 +124,15 @@ export class Detective extends Actor {
       searchAllColliders: true,
     });
 
-    // Ignore hits originating from this actor, Triggers, and non-colliding entities
+    // Ignore hits originating from this actor, Triggers, non-colliding entities, and interaction zones
     return hits.some(hit => {
       const owner = hit.collider.owner;
 
       const isSelf = owner === this;
+      const isInteraction = owner?.hasTag("interaction");
       const isTrigger = owner instanceof Trigger || hit.body.collisionType === CollisionType.PreventCollision;
 
-      return !isSelf && !isTrigger;
+      return !isSelf && !isTrigger && !isInteraction;
     });
   }
 

@@ -1,4 +1,4 @@
-import { Action, nextActionId, Vector, Animation, Actor, Scene, PositionNode, Graph } from "excalibur";
+import { Action, nextActionId, Vector, Animation, Actor, Scene, PositionNode, Graph, Ray, Trigger, CollisionType } from "excalibur";
 import { AnimationComponent } from "../Components/animation";
 import { NPCActor } from "../Lib/NPCManager";
 
@@ -9,6 +9,7 @@ export class FollowPath implements Action {
   private _path: Vector[] = [];
   private _currentIndex = 0;
   private _currentAnimKey: string | null = null; // Cache active animation key
+  private _isSegmentStarted = false; // Tracks if current tile-to-tile segment passed raycast
 
   /** Speed in pixels per second */
   public speed: number = 45;
@@ -32,6 +33,7 @@ export class FollowPath implements Action {
     this._stopped = true;
     this._started = false;
     this._currentAnimKey = null;
+    this._isSegmentStarted = false;
   }
 
   reset(): void {
@@ -40,6 +42,7 @@ export class FollowPath implements Action {
     this._path = [];
     this._currentIndex = 0;
     this._currentAnimKey = null;
+    this._isSegmentStarted = false;
   }
 
   update(elapsed: number): void {
@@ -85,6 +88,27 @@ export class FollowPath implements Action {
     const pathNodes = graph.aStar(startNode, endNode) ?? [];
     this._path = pathNodes.path.map((node: PositionNode<unknown>) => node.pos);
     this._currentIndex = 0;
+    this._isSegmentStarted = false;
+  }
+
+  private isTileBlocked(dir: Vector): boolean {
+    const engine = this.actor.scene?.engine;
+    if (!engine) return false;
+
+    const ray = new Ray(this.actor.pos, dir);
+    const hits = engine.currentScene.physics.rayCast(ray, {
+      maxDistance: 16,
+      searchAllColliders: true,
+    });
+
+    return hits.some(hit => {
+      const owner = hit.collider.owner;
+      const isSelf = owner === this.actor;
+      const isInteraction = owner?.hasTag("interaction");
+      const isTrigger = owner instanceof Trigger || hit.body.collisionType === CollisionType.PreventCollision;
+
+      return !isSelf && !isTrigger && !isInteraction;
+    });
   }
 
   private _stepMovement(elapsed: number): void {
@@ -97,23 +121,41 @@ export class FollowPath implements Action {
     const vectorToTarget = targetPos.sub(this.actor.pos);
     const distance = vectorToTarget.size;
 
+    // Target node reached: Snap to position and allow next segment evaluation
     if (distance <= this.arrivalThreshold) {
       this.actor.pos = targetPos;
       this._currentIndex++;
+      this._isSegmentStarted = false; // Reset segment flag for next waypoint
       return;
     }
 
     const direction = vectorToTarget.normalize();
-    const moveDistance = Math.min((this.speed * elapsed) / 1000, distance);
 
+    // Perform block check ONLY when initiating traversal towards the current target node
+    if (!this._isSegmentStarted) {
+      if (this.isTileBlocked(direction)) {
+        if (this.ac) {
+          const animKey = `Idle${getAnimationKey(direction)}`;
+          if (animKey !== this._currentAnimKey) {
+            this._currentAnimKey = animKey;
+            this.ac.set(animKey);
+          }
+        }
+        return; // Halt until path clears at tile boundary
+      }
+
+      // Tile ahead is clear: flag segment as started
+      this._isSegmentStarted = true;
+    }
+
+    const moveDistance = Math.min((this.speed * elapsed) / 1000, distance);
     this.actor.pos = this.actor.pos.add(direction.scale(moveDistance));
 
-    // Only update animation state when direction actually changes
+    // Update animation to walk state once moving
     if (this.ac && distance > 0.01) {
       const animKey = `Walk${getAnimationKey(direction)}`;
       if (animKey !== this._currentAnimKey) {
         this._currentAnimKey = animKey;
-
         this.ac.set(animKey);
       }
     }

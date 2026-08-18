@@ -43,16 +43,15 @@ export class MoveActor implements Action {
 
     // Initial setup on start
     if (!this._started) {
-      console.log("running move", this.numTiles, this.direction);
       if (this.numTiles <= 0) {
         this.finish(ac);
         return;
       }
 
-      // Obstacle check before taking the first step
+      // Check if blocked before taking the first step
       if (this.isTileBlocked(this.direction)) {
-        this.finish(ac);
-        return;
+        if (ac) ac.set(`Idle${getAnimationKey(this.direction)}`);
+        return; // Stay in update loop; retry next frame until unblocked
       }
 
       this._started = true;
@@ -71,19 +70,35 @@ export class MoveActor implements Action {
         this._tilesRemaining--;
 
         if (this._tilesRemaining > 0) {
-          // Check if the next tile ahead is blocked before continuing
+          // Check if the next tile ahead is blocked before setting new target
           if (this.isTileBlocked(this.direction)) {
-            this.finish(ac);
+            if (ac) ac.set(`Idle${getAnimationKey(this.direction)}`);
+            this._targetPos = null; // Pause step progression until path clears
             return;
           }
+
           // Advance to next tile step
+          if (ac) ac.set(`Walk${getAnimationKey(this.direction)}`);
           this._targetPos = this.actor.pos.add(this.direction.scale(this._tileSize));
         } else {
           // Finished all requested tile steps
           this.finish(ac);
         }
       } else {
+        // Mid-step raycast probe: handle dynamic player movement into path mid-tile
+        if (this.isTileBlocked(this.direction)) {
+          if (ac) ac.set(`Idle${getAnimationKey(this.direction)}`);
+          return; // Pause mid-step movement execution until player moves away
+        }
+
+        if (ac) ac.set(`Walk${getAnimationKey(this.direction)}`);
         this.actor.pos = this.actor.pos.add(step);
+      }
+    } else {
+      // Waiting state between tiles: retry path probe
+      if (!this.isTileBlocked(this.direction)) {
+        if (ac) ac.set(`Walk${getAnimationKey(this.direction)}`);
+        this._targetPos = this.actor.pos.add(this.direction.scale(this._tileSize));
       }
     }
   }

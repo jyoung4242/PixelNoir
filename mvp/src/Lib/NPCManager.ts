@@ -264,7 +264,7 @@ export class NPCActor extends Actor {
       anchor: Vector.Half,
       collisionType: CollisionType.Passive,
     });
-
+    this.interactionZone.addTag("interaction");
     // Optional event listeners for player detection
     this.interactionZone.on("collisionstart", evt => {
       if (evt.other.owner!.name === "Player") {
