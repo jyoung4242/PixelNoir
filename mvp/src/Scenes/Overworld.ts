@@ -199,5 +199,6 @@ export class OverWorld extends Scene<TransitionContext> {
     this.add(this.warehouseTrigger);
     this.add(this.PIofficeTrigger);
     this.add(this.cutsceneTrigger);
+    this.add(new ClockUI());
   }
 }
