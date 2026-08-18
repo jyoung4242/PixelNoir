@@ -1,5 +1,6 @@
 import { vec, Vector } from "excalibur";
-import { NpcManifest } from "../../types";
+import { NpcManifest, InteractionManifest } from "../../types";
+import { CutsceneManifest } from "../../Lib/cutscenes/CutScenes";
 
 export const karenManifest: NpcManifest = {
   name: "Karen",
@@ -19,4 +20,35 @@ export const karenManifest: NpcManifest = {
       ],
     },
   ],
+};
+
+export const karenCutscene: CutsceneManifest = {
+  id: "karen",
+  commands: [
+    {
+      type: "log",
+      args: {
+        message: "I'm a cutscene, waiting 2.5 seconds",
+        level: "info",
+      },
+    },
+    {
+      type: "wait",
+      args: {
+        duration: 2500,
+      },
+    },
+    {
+      type: "log",
+      args: {
+        message: "Interaction cutscene ending",
+        level: "info",
+      },
+    },
+  ],
+};
+export const karenInteraction: InteractionManifest = {
+  id: "karen_intro",
+  cutscene: karenCutscene,
+  priority: 1,
 };

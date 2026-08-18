@@ -1,30 +1,35 @@
-import { Actor, CollisionType, Engine, Ray, Trigger, vec, Vector } from "excalibur";
+import { Actor, CollisionType, Engine, Ray, RayCastHit, Trigger, Vector, vec } from "excalibur";
 import { DetectiveAnimations } from "../Animations/Detective";
 import { AnimationComponent } from "../Components/animation";
 import { GlobalEvents } from "../Lib/GlobalEvents";
 import { CutSceneParticipantComponent } from "../Lib/cutscenes/CutScenes";
+import { NPCActor, triggerNpcInteraction } from "../Lib/NPCManager";
+import { StoryResolver } from "../Lib/StoryPoints";
+import { storyResolver } from "../main";
+import { InteractionZone } from "../Lib/Interactions";
 
 export class Detective extends Actor {
-  tileSize: number = 16;
+  tileSize: number = 16; //
   speed: number = 45;
   isMoving: boolean = false;
   directionFacing: Vector = Vector.Down;
   currentDirection: Vector = Vector.Zero;
   targetPos: Vector | null = null;
-  // Cutscene tracking component reference
   public cutsceneComponent: CutSceneParticipantComponent;
+
+  // Track active interaction triggers the detective is currently standing in
+  private activeInteractionZones: Set<Actor> = new Set();
 
   constructor(tilpos: Vector) {
     super({
       pos: vec(tilpos.x * 16, tilpos.y * 16),
       width: 16,
       height: 16,
-      anchor: Vector.Half, // Center anchor aligns cleanly with 16x16 grid math
+      anchor: Vector.Half,
       z: 1,
       collisionType: CollisionType.Active,
     });
-    this.graphics.offset = vec(0, -6); // Reset graphics offset to align with anchor
-    // Initialize Cutscene Participant Component with identifier
+    this.graphics.offset = vec(0, -6);
     this.cutsceneComponent = new CutSceneParticipantComponent({ id: "Detective" });
     this.addComponent(this.cutsceneComponent);
   }
@@ -35,7 +40,6 @@ export class Detective extends Actor {
     engine.currentScene.camera.strategy.lockToActor(this);
     engine.currentScene.camera.zoom = 3.5;
 
-    // Snap starting position directly to the center of the current 16x16 tile
     this.pos = vec(
       Math.floor(this.pos.x / this.tileSize) * this.tileSize + this.tileSize / 2,
       Math.floor(this.pos.y / this.tileSize) * this.tileSize + this.tileSize / 2,
@@ -44,6 +48,39 @@ export class Detective extends Actor {
     GlobalEvents.on("player-move", data => {
       this.currentDirection = data;
     });
+
+    // Listen for the interact event
+    GlobalEvents.on("interact", () => {
+      this.tryInteract();
+    });
+
+    // Collision enter listener: detect when stepping into an interaction zone
+    this.on("collisionstart", evt => {
+      const other = evt.other.owner as Actor;
+      if (other && other !== this && other.hasTag("interactable")) {
+        this.activeInteractionZones.add(other);
+      }
+    });
+
+    // Collision exit listener: detect when stepping out of an interaction zone
+    this.on("collisionend", evt => {
+      const other = evt.other.owner as Actor;
+      if (other && this.activeInteractionZones.has(other)) {
+        this.activeInteractionZones.delete(other);
+      }
+    });
+  }
+
+  private tryInteract() {
+    // Prevent interaction if mid-step or in a cutscene
+    if (this.cutsceneComponent?.isPlaying || this.isMoving) return;
+    // Trigger the interaction on any active zones the player is touching
+    for (const zone of this.activeInteractionZones) {
+      // triggerNpcInteraction(zone.parent as NPCActor, storyResolver, this.scene!.cutSceneSystem);
+      if (zone instanceof InteractionZone) {
+        zone.startInteraction(this.pos);
+      }
+    }
   }
 
   onAdd(engine: Engine): void {
@@ -60,51 +97,6 @@ export class Detective extends Actor {
     }
   }
 
-  // onPreUpdate(engine: Engine, delta: number) {
-  //   // ------------------------------------------------------------------------
-  //   // Cutscene Guard: Disable player inputs & movement during cutscenes
-  //   // ------------------------------------------------------------------------
-  //   if (this.cutsceneComponent?.isPlaying) {
-  //     // If mid-tile step when cutscene starts, snap to completed position
-  //     if (this.isMoving && this.targetPos) {
-  //       this.pos = this.targetPos;
-  //       this.isMoving = false;
-  //       this.targetPos = null;
-  //     }
-
-  //     // Force idle animation based on last facing direction
-  //     this.setAnimationBasedOnDirection(Vector.Zero);
-  //     return;
-  //   }
-  //   const deltaSeconds = delta / 1000;
-
-  //   // Attempt next grid step if stationary
-
-  //   if (!this.isMoving && !this.currentDirection.equals(Vector.Zero)) {
-  //     this.tryMove(engine, this.currentDirection);
-  //   }
-
-  //   // Process movement along the step
-  //   if (this.isMoving && this.targetPos) {
-  //     const step = this.directionFacing.scale(this.speed * deltaSeconds);
-  //     const distanceToTarget = this.targetPos.sub(this.pos);
-
-  //     if (step.magnitude >= distanceToTarget.magnitude) {
-  //       this.pos = this.targetPos; // Lock cleanly to target tile center
-
-  //       // Chain immediately into the next tile step if directional key is still held
-  //       if (!this.currentDirection.equals(Vector.Zero)) {
-  //         this.tryMove(engine, this.currentDirection);
-  //       } else {
-  //         this.isMoving = false;
-  //         this.targetPos = null;
-  //         this.setAnimationBasedOnDirection(Vector.Zero);
-  //       }
-  //     } else {
-  //       this.pos = this.pos.add(step);
-  //     }
-  //   }
-  // }
   onPreUpdate(engine: Engine, delta: number) {
     const deltaSeconds = delta / 1000;
     const inCutscene = this.cutsceneComponent?.isPlaying ?? false;
@@ -140,7 +132,6 @@ export class Detective extends Actor {
       return;
     }
 
-    // 3. Normal stationary input check
     if (!this.currentDirection.equals(Vector.Zero)) {
       this.tryMove(engine, this.currentDirection);
     }
@@ -165,19 +156,24 @@ export class Detective extends Actor {
     // Cast a ray 16 pixels ahead to detect colliders
     const ray = new Ray(this.pos, dir);
     const hits = engine.currentScene.physics.rayCast(ray, {
-      maxDistance: this.tileSize,
+      maxDistance: 16,
       searchAllColliders: true,
     });
 
-    // Ignore hits originating from this actor, Triggers, and non-colliding entities
+    // Ignore hits originating from this actor, Triggers, non-colliding entities, and interaction zones
     return hits.some(hit => {
-      const owner = hit.collider.owner;
-
-      const isSelf = owner === this;
-      const isTrigger = owner instanceof Trigger || hit.body.collisionType === CollisionType.PreventCollision;
-
-      return !isSelf && !isTrigger;
+      return this.isBarrier(hit);
     });
+  }
+
+  private isBarrier(hit: RayCastHit): boolean {
+    const owner = hit.collider.owner;
+    const isSelf = owner === this;
+    const isInteraction: boolean = owner?.hasTag("interactable") ?? false;
+    const isWall = owner?.hasTag("Wall") ?? false;
+    const isNPC = owner?.hasTag("NPC") ?? false;
+    const isTrigger = owner instanceof Trigger;
+    return (!isSelf && !isTrigger && !isInteraction) || isWall || isNPC;
   }
 
   setAnimationBasedOnDirection(dir: Vector) {

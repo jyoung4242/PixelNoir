@@ -9,8 +9,9 @@ import { ClockUI } from "../UI/ClockUI";
 import { npcManager } from "../Lib/NPCManager";
 import { warehousegraph } from "../Graphs/warehouse";
 import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
+import { CutsceneScene } from "./CutsceneScene";
 
-export class Warehouse extends Scene {
+export class Warehouse extends CutsceneScene<TransitionContext> {
   name = "Warehouse";
   graph = warehousegraph;
   map: StaticMap | undefined = undefined;
@@ -21,8 +22,8 @@ export class Warehouse extends Scene {
   }
 
   onInitialize(engine: Engine) {
-    let CSsystem = new CutSceneSystem(this.world);
-    this.world.add(CSsystem);
+    this.cutSceneSystem = new CutSceneSystem(this.world);
+    this.world.add(this.cutSceneSystem);
     this.map = new StaticMap({
       width: 176,
       height: 224,
@@ -69,7 +70,7 @@ export class Warehouse extends Scene {
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
-    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name, this);
     npcsToLoad.forEach(n => this.add(n));
     this.addAllActorsBack();
   }

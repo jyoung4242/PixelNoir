@@ -12,8 +12,9 @@ import { npcManager } from "../Lib/NPCManager";
 import { overworldgraph } from "../Graphs/overworld";
 import { CutsceneManifest, CutSceneSystem } from "../Lib/cutscenes/CutScenes";
 import { LogAction } from "../Lib/cutscenes/actions/log";
+import { CutsceneScene } from "./CutsceneScene";
 
-export class OverWorld extends Scene<TransitionContext> {
+export class OverWorld extends CutsceneScene<TransitionContext> {
   name = "Overworld";
   graph = overworldgraph;
   map: StaticMap | undefined = undefined;
@@ -23,8 +24,6 @@ export class OverWorld extends Scene<TransitionContext> {
   lighting: LightingSystem | undefined = undefined;
   cutsceneTrigger: Trigger | undefined = undefined;
 
-  cutSceneSystem: CutSceneSystem | undefined = undefined;
-
   player: Detective | undefined = undefined;
 
   constructor() {
@@ -32,9 +31,8 @@ export class OverWorld extends Scene<TransitionContext> {
   }
 
   onInitialize(engine: Engine) {
-    let CSsystem = new CutSceneSystem(this.world);
-    this.cutSceneSystem = CSsystem;
-    this.world.add(CSsystem);
+    this.cutSceneSystem = new CutSceneSystem(this.world);
+    this.world.add(this.cutSceneSystem);
     this.map = new StaticMap({
       width: 640,
       height: 320,
@@ -141,13 +139,11 @@ export class OverWorld extends Scene<TransitionContext> {
       height: 16,
       action: (ent: Entity) => {
         if (ent instanceof Detective) {
-          console.log("triggered cutscene");
           this.cutSceneSystem?.startCutScene("test");
         }
       },
     });
     this.add(this.cutsceneTrigger);
-    console.log(this.cutsceneTrigger);
 
     const testCutscene: CutsceneManifest = {
       id: "test",
@@ -180,7 +176,7 @@ export class OverWorld extends Scene<TransitionContext> {
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
-    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name, this);
     npcsToLoad.forEach(n => this.add(n));
     this.addAllActorsBack();
   }

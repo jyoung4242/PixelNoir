@@ -179,6 +179,7 @@ export class CutSceneSystem extends System {
 
   public async startCutScene(cutsceneId: string): Promise<void> {
     if (this.isPlaying) return;
+
     // Guarantee director and camera are valid BEFORE sequence runs
     this.ensureDirector();
 
@@ -258,10 +259,7 @@ export class CutSceneSystem extends System {
     // Wait Command
     this.registerCommand("wait", async (args, ctx) => {
       const { duration } = args;
-      console.log("delaying", duration, ctx.system.director.actions);
-
       await ctx.system.director.actions.delay(duration).toPromise();
-      console.log("delay complete");
     });
 
     // 3. Camera Shake: Clean and explicit

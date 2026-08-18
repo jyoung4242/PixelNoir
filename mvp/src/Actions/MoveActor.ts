@@ -43,16 +43,15 @@ export class MoveActor implements Action {
 
     // Initial setup on start
     if (!this._started) {
-      console.log("running move", this.numTiles, this.direction);
       if (this.numTiles <= 0) {
         this.finish(ac);
         return;
       }
 
-      // Obstacle check before taking the first step
+      // Check if blocked before taking the first tile step
       if (this.isTileBlocked(this.direction)) {
-        this.finish(ac);
-        return;
+        if (ac) ac.set(`Idle${getAnimationKey(this.direction)}`);
+        return; // Stay in update loop; retry next frame until unblocked
       }
 
       this._started = true;
@@ -71,19 +70,30 @@ export class MoveActor implements Action {
         this._tilesRemaining--;
 
         if (this._tilesRemaining > 0) {
-          // Check if the next tile ahead is blocked before continuing
+          // Check if the next tile ahead is blocked BEFORE setting new target
           if (this.isTileBlocked(this.direction)) {
-            this.finish(ac);
+            if (ac) ac.set(`Idle${getAnimationKey(this.direction)}`);
+            this._targetPos = null; // Pause step progression at grid boundary until path clears
             return;
           }
+
           // Advance to next tile step
+          if (ac) ac.set(`Walk${getAnimationKey(this.direction)}`);
           this._targetPos = this.actor.pos.add(this.direction.scale(this._tileSize));
         } else {
           // Finished all requested tile steps
           this.finish(ac);
         }
       } else {
+        // Smoothly interpolate to targetPos without running mid-transit raycasts
+        if (ac) ac.set(`Walk${getAnimationKey(this.direction)}`);
         this.actor.pos = this.actor.pos.add(step);
+      }
+    } else {
+      // Waiting state at tile boundary: retry path probe
+      if (!this.isTileBlocked(this.direction)) {
+        if (ac) ac.set(`Walk${getAnimationKey(this.direction)}`);
+        this._targetPos = this.actor.pos.add(this.direction.scale(this._tileSize));
       }
     }
   }
@@ -99,13 +109,14 @@ export class MoveActor implements Action {
       searchAllColliders: true,
     });
 
-    // Ignore self, triggers, and non-colliding entities
+    // Ignore self, triggers, non-colliding entities, and interaction zones
     return hits.some(hit => {
       const owner = hit.collider.owner;
       const isSelf = owner === this.actor;
+      const isInteraction = owner?.hasTag("interaction");
       const isTrigger = owner instanceof Trigger || hit.body.collisionType === CollisionType.PreventCollision;
 
-      return !isSelf && !isTrigger;
+      return !isSelf && !isTrigger && !isInteraction;
     });
   }
 

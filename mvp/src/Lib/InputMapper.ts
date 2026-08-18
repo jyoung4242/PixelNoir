@@ -2,6 +2,19 @@ import { Engine, Keys, Vector } from "excalibur";
 import { GlobalEvents } from "./GlobalEvents";
 
 export function initializeInputMappings(game: Engine) {
+  // NPC Interaction mapping
+  game.inputMapper.on(
+    ({ keyboard }) => {
+      if (keyboard.wasPressed(Keys.Space)) {
+        return true;
+      }
+      return false;
+    },
+    () => {
+      GlobalEvents.emit("interact");
+    },
+  );
+
   // Movement mapping
   game.inputMapper.on(
     ({ keyboard }) => {

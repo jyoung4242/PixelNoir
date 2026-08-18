@@ -167,7 +167,6 @@ export class LightingSystem extends System {
 
     this.offscreen.width = initialWidth;
     this.offscreen.height = initialHeight;
-    console.log(initialWidth, initialHeight);
 
     this.lightingCanvas = new Canvas({
       width: initialWidth,
@@ -176,7 +175,6 @@ export class LightingSystem extends System {
         this._renderLightingCanvas(ctx);
       },
     });
-    console.log(this.lightingCanvas);
     if (this.options.screenElement) {
       this.lightingEntity = this.options.screenElement;
     } else {
@@ -192,7 +190,6 @@ export class LightingSystem extends System {
       scene.add(this.lightingEntity);
     }
     this.lightingEntity.graphics.use(this.lightingCanvas);
-    console.log(this.lightingEntity);
   }
 
   update(delta: number): void {
