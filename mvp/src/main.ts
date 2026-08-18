@@ -1,5 +1,6 @@
 // main.ts
 import { Detective } from "./Actors/detective";
+import { initializeGlobalEvents } from "./Lib/GlobalEvents";
 import { initializeInputMappings } from "./Lib/InputMapper";
 import { loader } from "./resources";
 import { Bar } from "./Scenes/Bar";
@@ -19,6 +20,7 @@ const game = new Engine({
   height: 600, // the height of the canvas
   displayMode: DisplayMode.Fixed, // the display mode
   pixelArt: true,
+  backgroundColor: Color.Black,
   scenes: {
     Overworld: {
       scene: new OverWorld(),
@@ -54,6 +56,8 @@ const game = new Engine({
 await game.start(loader);
 initializeInputMappings(game);
 InitializeGameNPCs();
+
+export const clockManager = new ClockManager();
 
 export const clockManager = new ClockManager();
 

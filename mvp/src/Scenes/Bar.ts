@@ -5,6 +5,8 @@ import { Resources } from "../resources";
 import { initPlayerInScene, isDetective } from "../Lib/utils";
 import { AnimationComponent } from "../Components/animation";
 import { TransitionContext } from "../types";
+import { clockManager } from "../main";
+import { ClockUI } from "../UI/ClockUI";
 import { npcManager } from "../Lib/NPCManager";
 import { bargraph } from "../Graphs/bar";
 import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
@@ -65,6 +67,9 @@ export class Bar extends Scene<TransitionContext> {
         }
       },
     });
+    this.add(this.overworldTrigger);
+    //UI clock
+    this.add(new ClockUI());
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {

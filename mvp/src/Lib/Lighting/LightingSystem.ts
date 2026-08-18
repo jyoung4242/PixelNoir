@@ -167,6 +167,7 @@ export class LightingSystem extends System {
 
     this.offscreen.width = initialWidth;
     this.offscreen.height = initialHeight;
+    console.log(initialWidth, initialHeight);
 
     this.lightingCanvas = new Canvas({
       width: initialWidth,
@@ -175,7 +176,7 @@ export class LightingSystem extends System {
         this._renderLightingCanvas(ctx);
       },
     });
-
+    console.log(this.lightingCanvas);
     if (this.options.screenElement) {
       this.lightingEntity = this.options.screenElement;
     } else {
@@ -186,18 +187,19 @@ export class LightingSystem extends System {
         height: initialHeight,
         z: this.options.zIndex ?? 100,
         color: Color.Transparent,
+        anchor: Vector.Zero,
       });
       scene.add(this.lightingEntity);
     }
-
     this.lightingEntity.graphics.use(this.lightingCanvas);
+    console.log(this.lightingEntity);
   }
 
   update(delta: number): void {
     const engine = this.engine;
 
     if (!this.options.size) {
-      if (this.lightingCanvas.width !== engine.screen.drawWidth || this.lightingCanvas.height !== engine.screen.drawHeight) {
+      if (this.lightingCanvas.width !== engine.screen.viewport.width || this.lightingCanvas.height !== engine.screen.viewport.height) {
         const w = engine.screen.drawWidth;
         const h = engine.screen.drawHeight;
 
@@ -268,10 +270,10 @@ export class LightingSystem extends System {
   }
 
   private _renderLightingCanvas(ctx: CanvasRenderingContext2D): void {
-    // Add these type aliases right before using them:
     type PolyOccluder = { kind: "poly"; verts: Vector[] };
     type CircleOccluder = { kind: "circle"; center: Vector; radius: number };
     type Occluder = PolyOccluder | CircleOccluder;
+
     const engine = this.engine;
     const camera = this.scene.camera;
 
@@ -281,22 +283,38 @@ export class LightingSystem extends System {
 
     ctx.clearRect(0, 0, w, h);
 
+    // --- 1. GET AMBIENT LIGHTING DATA ---
     let ambientIntensity = 0.05;
+    let ambientColor = Color.fromHex("#d8e2ec");
+
     for (const e of this.ambientQuery.entities) {
       const a = e.get(AmbientLightComponent)!;
-      ambientIntensity = a.enabled ? a.intensity : 0;
+      if (a.enabled) {
+        ambientIntensity = a.intensity;
+        ambientColor = a.color;
+      }
     }
 
     const roomClips: { x: number; y: number; w: number; h: number }[] = [];
 
+    // --- 2. DARKNESS & AMBIENT OVERLAYS ---
     for (const e of this.darknessXfQuery.entities) {
       const d = e.get(DarknessComponent)!;
       const xf = e.get(TransformComponent)!;
 
       if (d.width === Infinity || d.height === Infinity) {
+        // 2a. Draw Darkness Overlay
         const effectiveAlpha = Math.max(0, d.intensity - ambientIntensity);
         ctx.fillStyle = colorToRgba(d.color, effectiveAlpha);
         ctx.fillRect(0, 0, w, h);
+
+        // 2b. Apply Ambient Color Tint (multiply/source-over blend)
+        if (ambientIntensity > 0) {
+          ctx.fillStyle = colorToRgba(ambientColor, ambientIntensity * 0.4);
+          ctx.fillRect(0, 0, w, h);
+        }
+
+        roomClips.push({ x: 0, y: 0, w, h });
         continue;
       }
 
@@ -313,11 +331,19 @@ export class LightingSystem extends System {
 
       roomClips.push(rect);
 
+      // Draw darkness
       const effectiveAlpha = Math.max(0, d.intensity - ambientIntensity);
       ctx.fillStyle = colorToRgba(d.color, effectiveAlpha);
       ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+
+      // Draw ambient tint overlay
+      if (ambientIntensity > 0) {
+        ctx.fillStyle = colorToRgba(ambientColor, ambientIntensity * 0.4);
+        ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+      }
     }
 
+    // --- 3. CULLING BOUNDS ---
     const camPos = camera.pos;
     const halfW = w / 2 / effectiveZoom + this.cullPadding;
     const halfH = h / 2 / effectiveZoom + this.cullPadding;
@@ -329,6 +355,7 @@ export class LightingSystem extends System {
     const inCameraView = (worldPos: Vector, radius: number) =>
       worldPos.x + radius > camMinX && worldPos.x - radius < camMaxX && worldPos.y + radius > camMinY && worldPos.y - radius < camMaxY;
 
+    // --- 4. OCCLUDERS ---
     const occluders: Occluder[] = [];
     for (const e of this.occluderXfQuery.entities) {
       const comp = e.get(LightOccluderComponent)!;
@@ -353,6 +380,7 @@ export class LightingSystem extends System {
       }
     }
 
+    // --- 5. LIGHT MASK DRAWING HELPER ---
     const drawLight = (screenPos: Vector, screenRadius: number, alpha: number, drawShape: (c: CanvasRenderingContext2D) => void) => {
       if (!this.offscreenCTX || !this.offscreen) return;
       this.offscreenCTX.clearRect(0, 0, w, h);
@@ -389,6 +417,7 @@ export class LightingSystem extends System {
       ctx.restore();
     };
 
+    // --- 6. POINT LIGHTS ---
     for (const e of this.pointXfQuery.entities) {
       const light = e.get(PointLightComponent)!;
       if (!light.enabled) continue;
@@ -411,6 +440,7 @@ export class LightingSystem extends System {
       });
     }
 
+    // --- 7. CONE LIGHTS ---
     for (const e of this.coneXfQuery.entities) {
       const light = e.get(ConeLightComponent)!;
       if (!light.enabled) continue;
@@ -443,12 +473,12 @@ export class LightingSystem extends System {
       });
     }
 
+    // --- 8. COLOR TINTS ---
     for (const e of this.pointXfQuery.entities) {
       const light = e.get(PointLightComponent)!;
-      if (!light.enabled) continue;
+      if (!light.enabled || light.color.equal(Color.White)) continue;
       const xf = e.get(TransformComponent)!;
       if (!inCameraView(xf.pos, light.radius)) continue;
-      if (light.color.equal(Color.White)) continue;
 
       const screenPos = worldToScreen(xf.pos, engine);
       const activeClip = roomClips.find(
@@ -480,10 +510,9 @@ export class LightingSystem extends System {
 
     for (const e of this.coneXfQuery.entities) {
       const light = e.get(ConeLightComponent)!;
-      if (!light.enabled) continue;
+      if (!light.enabled || light.color.equal(Color.White)) continue;
       const xf = e.get(TransformComponent)!;
       if (!inCameraView(xf.pos, light.radius)) continue;
-      if (light.color.equal(Color.White)) continue;
 
       const screenPos = worldToScreen(xf.pos, engine);
       const activeClip = roomClips.find(

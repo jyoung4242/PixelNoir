@@ -4,6 +4,8 @@ import { StaticMap } from "../Actors/staticMap";
 import { isDetective, initPlayerInScene } from "../Lib/utils";
 import { Resources } from "../resources";
 import { TransitionContext } from "../types";
+import { clockManager } from "../main";
+import { ClockUI } from "../UI/ClockUI";
 import { npcManager } from "../Lib/NPCManager";
 import { warehousegraph } from "../Graphs/warehouse";
 import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
@@ -60,6 +62,9 @@ export class Warehouse extends Scene {
         }
       },
     });
+    this.add(this.overworldTrigger);
+    //UI clock
+    this.add(new ClockUI());
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {

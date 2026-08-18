@@ -4,6 +4,10 @@ import { Resources } from "../resources";
 import { Detective } from "../Actors/detective";
 import { initPlayerInScene, isDetective } from "../Lib/utils";
 import { TransitionContext } from "../types";
+import { clockManager } from "../main";
+import { ClockUI } from "../UI/ClockUI";
+import { LightingSystem } from "../Lib/Lighting";
+import { LightingActor } from "../Actors/lightingActor";
 import { npcManager } from "../Lib/NPCManager";
 import { overworldgraph } from "../Graphs/overworld";
 import { CutsceneManifest, CutSceneSystem } from "../Lib/cutscenes/CutScenes";
@@ -16,6 +20,7 @@ export class OverWorld extends Scene<TransitionContext> {
   barTrigger: Trigger | undefined = undefined;
   warehouseTrigger: Trigger | undefined = undefined;
   PIofficeTrigger: Trigger | undefined = undefined;
+  lighting: LightingSystem | undefined = undefined;
   cutsceneTrigger: Trigger | undefined = undefined;
 
   cutSceneSystem: CutSceneSystem | undefined = undefined;
@@ -120,6 +125,16 @@ export class OverWorld extends Scene<TransitionContext> {
     });
     this.add(this.PIofficeTrigger);
 
+    //UI clock
+    this.add(new ClockUI());
+
+    this.lighting = new LightingSystem({
+      scene: this,
+      engine: engine,
+      zIndex: 1000,
+    });
+    this.world.add(this.lighting);
+    this.world.add(new LightingActor());
     this.cutsceneTrigger = new Trigger({
       pos: vec(9 * 16 + 8, 12 * 16 + 8),
       width: 16,

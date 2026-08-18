@@ -4,6 +4,8 @@ import { StaticMap } from "../Actors/staticMap";
 import { initPlayerInScene, isDetective } from "../Lib/utils";
 import { Resources } from "../resources";
 import { TransitionContext } from "../types";
+import { clockManager } from "../main";
+import { ClockUI } from "../UI/ClockUI";
 import { npcManager } from "../Lib/NPCManager";
 import { piOfficegraph } from "../Graphs/PIOffice";
 import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
@@ -63,6 +65,9 @@ export class PIOffice extends Scene<TransitionContext> {
         }
       },
     });
+    this.add(this.overworldTrigger);
+    //UI clock
+    this.add(new ClockUI());
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
