@@ -59,8 +59,6 @@ InitializeGameNPCs();
 
 export const clockManager = new ClockManager();
 
-export const clockManager = new ClockManager();
-
 export const player: Detective = new Detective(vec(5, 5));
 Object.assign(game.currentScene, { name: "root" });
 game.goToScene<TransitionContext>("Overworld", { sceneActivationData: { player, facing: Vector.Down, leavingScene: "root" } });

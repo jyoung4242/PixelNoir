@@ -1,6 +1,6 @@
-import { EventEmitter, Vector } from "excalibur";
+import { EventEmitter } from "excalibur";
 
-export const GlobalEvents = new ex.EventEmitter<CustomEvents>();
+export const GlobalEvents = new EventEmitter<CustomEvents>();
 export type CustomEvents = {
   "player-move": ex.Vector;
   "clock-tick": { normalizedTime: number; timeString: string };
@@ -24,4 +24,4 @@ export function initializeGlobalEvents() {
   GlobalEvents.on("hour-changed", ({ day, hour }) => {
     console.log(`[CLOCK] Day ${day} - Hour ${hour}:00`);
   });
-
+}
