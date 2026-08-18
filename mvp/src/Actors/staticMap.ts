@@ -58,18 +58,17 @@ export class StaticMap extends Actor {
       let wall = new Wall(wallPos);
       this.addChild(wall);
     }
-    this.darkness = new DarknessComponent(
-      Color.fromRGB(5, 5, 20),
-      0.9,
-      this.width, // ← match your room width
-      this.height, // ← match your room height
-    );
-    this.ambient = new AmbientLightComponent(
-      Color.fromHex("#d8e2ec"), // cool ambient
-      0.05,
-    );
-    this.addComponent(this.darkness);
-    this.addComponent(this.ambient);
+    console.log(this, this.width, this.height);
+
+    if (this.upper == undefined) {
+      console.log("adding to upper");
+
+      this.darkness = new DarknessComponent(Color.fromRGB(5, 5, 20), 0.9);
+      this.ambient = new AmbientLightComponent(
+        Color.fromHex("#d8e2ec"), // cool ambient
+        0.05,
+      );
+    }
   }
 }
 

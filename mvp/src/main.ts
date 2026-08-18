@@ -1,9 +1,8 @@
 // main.ts
 import { Detective } from "./Actors/detective";
-import { StaticMap } from "./Actors/staticMap";
 import { initializeGlobalEvents } from "./Lib/GlobalEvents";
 import { initializeInputMappings } from "./Lib/InputMapper";
-import { loader, Resources } from "./resources";
+import { loader } from "./resources";
 import { Bar } from "./Scenes/Bar";
 import { OverWorld } from "./Scenes/Overworld";
 import { PIOffice } from "./Scenes/PIOffice";
@@ -66,5 +65,5 @@ game.goToScene<TransitionContext>("Overworld", { sceneActivationData: { player, 
 const preUpdateHandler = (evt: PreUpdateEvent<Engine>) => {
   clockManager.update(evt.elapsed);
 };
-
+game.timescale = 12;
 game.on("preupdate", preUpdateHandler);

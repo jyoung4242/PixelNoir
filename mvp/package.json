@@ -21,6 +21,6 @@
   },
   "dependencies": {
     "canvas-txt": "^4.1.1",
-    "excalibur": "^0.33.0-alpha.176"
+    "excalibur": "^0.33.0-alpha.195"
   }
 }

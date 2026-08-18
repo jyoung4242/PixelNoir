@@ -120,9 +120,10 @@ export class OverWorld extends Scene<TransitionContext> {
     this.lighting = new LightingSystem({
       scene: this,
       engine: engine,
+      zIndex: 1000,
     });
     this.world.add(this.lighting);
-    // this.world.add(new LightingActor());
+    this.world.add(new LightingActor());
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
