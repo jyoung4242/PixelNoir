@@ -1,12 +1,15 @@
 import { Actor, Animation, CollisionType, Engine, Scene, vec, Vector } from "excalibur";
-import { ActionStep, NpcManifest } from "../types";
+import { ActionStep, InteractionManifest, NpcManifest } from "../types";
 import { chefManifest } from "../Content/NPCs/chef";
 import { ChefAnimations } from "../Animations/Chef";
 import { AnimationComponent } from "../Components/animation";
 import { ActionRegistry } from "../Actions/actionRegistry";
-import { karenManifest } from "../Content/NPCs/Karen";
+import { karenInteraction, karenManifest } from "../Content/NPCs/Karen";
 import { karenAnimations } from "../Animations/Karen";
-import { CutSceneParticipantComponent } from "./cutscenes/CutScenes";
+import { CutSceneParticipantComponent, CutSceneSystem } from "./cutscenes/CutScenes";
+import { StoryResolver } from "./StoryPoints";
+import { InteractionComponent } from "./Interactions";
+import { CutsceneScene } from "../Scenes/CutsceneScene";
 
 /**
  * This is for npc registration
@@ -16,6 +19,8 @@ export interface NPCconfig {
   name: string;
   manifest: NpcManifest;
   animations: Record<string, Animation>;
+  /** Cutscenes/dialogue triggers evaluated when player interacts with the NPC */
+  interactions?: InteractionManifest[];
 }
 
 /**
@@ -33,6 +38,7 @@ export type NPCData = {
   virtualTile: Vector;
   actorID?: number | null;
   animations: Record<string, Animation>;
+  interactions?: InteractionManifest[];
 };
 
 /**
@@ -76,17 +82,18 @@ class NPCManager {
       stepTimeElapsed: 0,
       virtualTile: defaultTile,
       actorID: null,
+      interactions: config.interactions ?? [],
     };
     this.npcs.set(config.id, data);
   }
 
   /** Retrieves all NPCs that should be active when entering a scene */
-  getSceneNPCs(sceneName: string): NPCActor[] {
+  getSceneNPCs(sceneName: string, scene: CutsceneScene<any>): NPCActor[] {
     const activeActors: NPCActor[] = [];
 
     for (const npc of this.npcs.values()) {
       if (npc.isAlive && npc.currentScene === sceneName) {
-        const actor = this.spawnNPCForScene(npc);
+        const actor = this.spawnNPCForScene(npc, scene);
         activeActors.push(actor);
       }
     }
@@ -94,7 +101,13 @@ class NPCManager {
     return activeActors;
   }
 
-  updateNPCs(deltaMs: number, gameTime: string, storyPoints: Set<string>, activeScene: Scene, activeSceneName: string): void {
+  updateNPCs(
+    deltaMs: number,
+    gameTime: string,
+    storyPoints: Set<string>,
+    activeScene: CutsceneScene<any>,
+    activeSceneName: string,
+  ): void {
     for (const [id, npc] of this.npcs.entries()) {
       this.evaluateRoutineTrigger(npc, gameTime, storyPoints);
 
@@ -104,7 +117,7 @@ class NPCManager {
 
         // SCENARIO 1: NPC routine transitioned into the player's current scene while off-screen
         if (npc.currentScene === activeSceneName) {
-          const spawnedActor = this.spawnNPCForScene(npc);
+          const spawnedActor = this.spawnNPCForScene(npc, activeScene);
           activeScene.add(spawnedActor); // Add directly to active engine scene
         }
       }
@@ -112,8 +125,8 @@ class NPCManager {
   }
 
   /** Spawns and hydrates an NPCActor at its current virtual position */
-  private spawnNPCForScene(npc: NPCData): NPCActor {
-    const actor = new NPCActor(npc);
+  private spawnNPCForScene(npc: NPCData, activeScene: CutsceneScene<any>): NPCActor {
+    const actor = new NPCActor(npc, activeScene);
     npc.actorID = actor.id;
     return actor;
   }
@@ -234,11 +247,12 @@ export class NPCActor extends Actor {
   public readonly npcId: string;
   private currentStepIndex: number = -1;
   public currentScene = "root";
-  public interactionZone: Actor;
+  // public interactionZone: Actor;
   cutsceneComponent: CutSceneParticipantComponent;
   private wasInCutscene: boolean = false; // Track previous frame cutscene state
+  interactions: InteractionManifest[] = [];
 
-  constructor(data: NPCData) {
+  constructor(data: NPCData, activescene: CutsceneScene<any>) {
     super({
       width: 16,
       height: 16,
@@ -256,30 +270,16 @@ export class NPCActor extends Actor {
 
     this.cutsceneComponent = new CutSceneParticipantComponent({ id: data.name });
     this.addComponent(this.cutsceneComponent);
-
-    // Initialize Interaction Zone Child Actor
-    this.interactionZone = new Actor({
-      name: `${data.manifest.name}_InteractionZone`,
-      radius: 16,
-      anchor: Vector.Half,
-      collisionType: CollisionType.Passive,
-    });
-    this.interactionZone.addTag("interaction");
-    // Optional event listeners for player detection
-    this.interactionZone.on("collisionstart", evt => {
-      if (evt.other.owner!.name === "Player") {
-        // Trigger interaction prompt or cutscene logic
-      }
-    });
-
-    this.interactionZone.on("collisionend", evt => {
-      if (evt.other.owner!.name === "Player") {
-        // Hide prompt or clear interaction availability
-      }
-    });
-
-    // Attach child actor to the parent NPCActor
-    this.addChild(this.interactionZone);
+    this.addComponent(
+      new InteractionComponent({
+        name: data.name,
+        interactions: data.interactions ?? [],
+        zoneRadius: 16,
+        cutSceneSystem: activescene.cutSceneSystem as CutSceneSystem,
+      }),
+    );
+    this.addTag("NPC");
+    if (data.interactions) this.interactions = [...data.interactions];
   }
 
   getCurrentTile(): Vector {
@@ -349,6 +349,25 @@ export class NPCActor extends Actor {
       }
     }
   }
+
+  public face(target: Vector | Actor): void {
+    const targetPos = target instanceof Vector ? target : target.pos;
+    const delta = targetPos.sub(this.pos);
+
+    let direction = "Down";
+
+    // Determine primary axis of relative position
+    if (Math.abs(delta.x) > Math.abs(delta.y)) {
+      direction = delta.x > 0 ? "Right" : "Left";
+    } else {
+      direction = delta.y > 0 ? "Down" : "Up";
+    }
+
+    const animComp = this.get(AnimationComponent);
+    if (animComp) {
+      animComp.set(`Idle${direction}`);
+    }
+  }
 }
 
 /**
@@ -367,6 +386,7 @@ export function InitializeGameNPCs() {
     name: "Karen",
     manifest: karenManifest,
     animations: karenAnimations,
+    interactions: [karenInteraction], // Attach interaction here
   });
 }
 
@@ -383,4 +403,45 @@ export function generateNpcGuid(): string {
     return crypto.randomUUID();
   }
   return "npc-" + Date.now().toString(36) + "-" + Math.random().toString(36).substring(2, 9);
+}
+
+export async function triggerNpcInteraction(
+  npc: NPCActor,
+  resolver: StoryResolver,
+  cutSceneSystem: CutSceneSystem,
+): Promise<void | boolean> {
+  const activeInteraction = getActiveInteraction(npc, resolver);
+  if (!activeInteraction) return false;
+
+  const { cutscene } = activeInteraction;
+  return await cutSceneSystem.startCutScene(cutscene.id);
+}
+
+/**
+ * Evaluates an NPC's configured interactions against current story conditions
+ * and returns the highest-priority matching InteractionManifest.
+ */
+export function getActiveInteraction(npc: NPCActor, resolver: StoryResolver): InteractionManifest | null {
+  if (!npc.interactions || npc.interactions.length === 0) {
+    return null;
+  }
+
+  // Sort interactions by priority descending (highest checked first)
+  const sortedInteractions = [...npc.interactions].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+
+  for (const interaction of sortedInteractions) {
+    // If no conditions are required, treat as valid match
+    if (!interaction.requires || interaction.requires.length === 0) {
+      return interaction;
+    }
+
+    const mode = interaction.conditionMode ?? "ALL";
+
+    // Evaluate story conditions via the resolver
+    if (resolver.evaluateAll(interaction.requires, mode)) {
+      return interaction;
+    }
+  }
+
+  return null;
 }

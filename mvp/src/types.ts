@@ -4,6 +4,7 @@ import { Bar } from "./Scenes/Bar";
 import { OverWorld } from "./Scenes/Overworld";
 import { Warehouse } from "./Scenes/Warehouse";
 import { PIOffice } from "./Scenes/PIOffice";
+import { CutsceneManifest } from "./Lib/cutscenes/CutScenes";
 
 export type GameScenes = Bar | OverWorld | Warehouse | PIOffice;
 export type SceneNames = "root" | "Overworld" | "Bar" | "Warehouse" | "PIOffice";
@@ -36,6 +37,29 @@ export interface ActionStep {
   type: string;
   /** Parameters fed directly to your Excalibur action executor */
   args: Record<string, any>;
+}
+
+// --- Story Condition & Cutscene Additions ---
+
+export type ComparisonOp = "==" | "!=" | ">" | ">=" | "<" | "<=" | "IN" | "NOT_IN";
+
+export interface StoryCondition {
+  key: string;
+  op: ComparisonOp;
+  value: any;
+}
+
+export interface InteractionManifest {
+  id: string;
+  /** Priority when multiple interactions meet condition requirements (higher evaluates first) */
+  priority?: number;
+  /** Storypoint conditions that must ALL (or ANY) be true to trigger this cutscene */
+  requires?: StoryCondition[];
+  conditionMode?: "ALL" | "ANY";
+  /** Optional time window restriction (e.g., only available at night) */
+  timeWindow?: { start: string; end: string };
+  /** Either a full CutsceneManifest object or the ID of a pre-registered cutscene */
+  cutscene: CutsceneManifest;
 }
 
 export type NpcManifest = {

@@ -10,8 +10,9 @@ import { ClockUI } from "../UI/ClockUI";
 import { npcManager } from "../Lib/NPCManager";
 import { bargraph } from "../Graphs/bar";
 import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
+import { CutsceneScene } from "./CutsceneScene";
 
-export class Bar extends Scene<TransitionContext> {
+export class Bar extends CutsceneScene<TransitionContext> {
   name = "Bar";
   graph = bargraph;
   map: StaticMap | undefined = undefined;
@@ -22,8 +23,8 @@ export class Bar extends Scene<TransitionContext> {
   }
 
   onInitialize(engine: Engine) {
-    let CSsystem = new CutSceneSystem(this.world);
-    this.world.add(CSsystem);
+    this.cutSceneSystem = new CutSceneSystem(this.world);
+    this.world.add(this.cutSceneSystem);
 
     this.map = new StaticMap({
       width: 224,
@@ -74,7 +75,7 @@ export class Bar extends Scene<TransitionContext> {
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
-    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name, this);
     npcsToLoad.forEach(n => this.add(n));
     this.addAllActorsBack();
   }

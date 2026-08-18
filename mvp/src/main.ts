@@ -14,6 +14,7 @@ import { Engine, DisplayMode, vec, FadeInOut, Color, Vector, PreUpdateEvent } fr
 import { TransitionContext } from "./types";
 import { InitializeGameNPCs, npcManager } from "./Lib/NPCManager";
 import { ClockManager } from "./Lib/ClockManager";
+import { StoryResolver, StoryStore } from "./Lib/StoryPoints";
 
 const game = new Engine({
   width: 800, // the width of the canvas
@@ -58,6 +59,8 @@ initializeInputMappings(game);
 InitializeGameNPCs();
 
 export const clockManager = new ClockManager();
+export const storyPoints = new StoryStore();
+export const storyResolver = new StoryResolver(storyPoints);
 
 export const player: Detective = new Detective(vec(5, 5));
 Object.assign(game.currentScene, { name: "root" });

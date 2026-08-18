@@ -58,11 +58,8 @@ export class StaticMap extends Actor {
       let wall = new Wall(wallPos);
       this.addChild(wall);
     }
-    console.log(this, this.width, this.height);
 
     if (this.upper == undefined) {
-      console.log("adding to upper");
-
       this.darkness = new DarknessComponent(Color.fromRGB(5, 5, 20), 0.9);
       this.ambient = new AmbientLightComponent(
         Color.fromHex("#d8e2ec"), // cool ambient
@@ -82,6 +79,7 @@ class Wall extends Entity {
     this.addComponent(new TransformComponent());
     this.addComponent(new ColliderComponent(Shape.Box(width, height, vec(0, 0))));
     this.addComponent(new BodyComponent());
+    this.addTag("Wall");
   }
 
   onInitialize(engine: ex.Engine) {

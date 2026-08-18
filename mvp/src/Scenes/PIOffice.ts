@@ -9,8 +9,9 @@ import { ClockUI } from "../UI/ClockUI";
 import { npcManager } from "../Lib/NPCManager";
 import { piOfficegraph } from "../Graphs/PIOffice";
 import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
+import { CutsceneScene } from "./CutsceneScene";
 
-export class PIOffice extends Scene<TransitionContext> {
+export class PIOffice extends CutsceneScene<TransitionContext> {
   name = "PIOffice";
   graph = piOfficegraph;
   map: StaticMap | undefined = undefined;
@@ -21,8 +22,8 @@ export class PIOffice extends Scene<TransitionContext> {
   }
 
   onInitialize(engine: Engine) {
-    let CSsystem = new CutSceneSystem(this.world);
-    this.world.add(CSsystem);
+    this.cutSceneSystem = new CutSceneSystem(this.world);
+    this.world.add(this.cutSceneSystem);
     this.map = new StaticMap({
       width: 192,
       height: 192,
@@ -72,7 +73,7 @@ export class PIOffice extends Scene<TransitionContext> {
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
-    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name, this);
     npcsToLoad.forEach(n => this.add(n));
     this.addAllActorsBack();
   }
