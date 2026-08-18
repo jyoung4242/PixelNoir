@@ -7,9 +7,13 @@ import { AnimationComponent } from "../Components/animation";
 import { TransitionContext } from "../types";
 import { clockManager } from "../main";
 import { ClockUI } from "../UI/ClockUI";
+import { npcManager } from "../Lib/NPCManager";
+import { bargraph } from "../Graphs/bar";
+import { CutSceneSystem } from "../Lib/cutscenes/CutScenes";
 
 export class Bar extends Scene<TransitionContext> {
   name = "Bar";
+  graph = bargraph;
   map: StaticMap | undefined = undefined;
   player: Detective | undefined = undefined;
   overworldTrigger: Trigger | undefined = undefined;
@@ -18,7 +22,8 @@ export class Bar extends Scene<TransitionContext> {
   }
 
   onInitialize(engine: Engine) {
-    console.log("init bar");
+    let CSsystem = new CutSceneSystem(this.world);
+    this.world.add(CSsystem);
 
     this.map = new StaticMap({
       width: 224,
@@ -42,7 +47,6 @@ export class Bar extends Scene<TransitionContext> {
       lower: Resources.barLower.toSprite(),
       zIndex: 0,
     });
-    this.add(this.map);
 
     //add scene triggers
     this.overworldTrigger = new Trigger({
@@ -70,37 +74,20 @@ export class Bar extends Scene<TransitionContext> {
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
-
-    // let { player, facing, leavingScene } = ctx.data as TransitionContext;
-
-    // if (ctx.data) {
-    //   this.player = player;
-    //   this.player.graphics.isVisible = true;
-    //   switch (leavingScene) {
-    //     case "root":
-    //     case "Overworld":
-    //       this.player.pos = vec(5 * 16, 9 * 16);
-    //       break;
-    //     case "Bar":
-    //     case "Warehouse":
-    //     case "PIOffice":
-    //     default:
-    //       break;
-    //   }
-
-    //   this.player.vel = Vector.Zero;
-    //   this.player.isMoving = false;
-    //   let ac = this.player.get(AnimationComponent);
-    //   // ac.set("IdleUp");
-    //   this.player.directionFacing = facing;
-    //   this.camera.strategy.lockToActor(this.player);
-    //   this.camera.zoom = 3.5;
-    //   this.add(this.player);
-    // }
+    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    npcsToLoad.forEach(n => this.add(n));
+    this.addAllActorsBack();
   }
 
-  onDeactivate(_ctx: SceneActivationContext) {
+  onDeactivate(ctx: SceneActivationContext) {
     this.remove(this.player!);
     this.player = undefined;
+    this.clear();
+  }
+
+  addAllActorsBack() {
+    if (!this.map || !this.overworldTrigger) throw new Error("whoops");
+    this.add(this.map);
+    this.add(this.overworldTrigger);
   }
 }

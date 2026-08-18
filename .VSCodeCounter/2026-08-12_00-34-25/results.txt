@@ -1,0 +1,88 @@
+Date : 2026-08-12 00:34:25
+Directory : c:\programming\PixelNoir\mvp\src
+Total : 47 files,  4390 codes, 353 comments, 778 blanks, all 5521 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| TypeScript |         45 |      4,044 |        349 |        630 |      5,023 |
+| Markdown   |          1 |        297 |          0 |        144 |        441 |
+| PostCSS    |          1 |         49 |          4 |          4 |         57 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                          | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                             |         47 |      4,390 |        353 |        778 |      5,521 |
+| . (Files)                                                                     |          5 |        214 |         14 |         34 |        262 |
+| Actions                                                                       |          5 |        384 |         16 |         82 |        482 |
+| Actors                                                                        |          2 |        183 |          7 |         30 |        220 |
+| Animations                                                                    |          2 |        204 |          6 |         44 |        254 |
+| Components                                                                    |          1 |         65 |          4 |         19 |         88 |
+| Content                                                                       |          1 |         22 |         46 |          3 |         71 |
+| Content\NPCs                                                                  |          1 |         22 |         46 |          3 |         71 |
+| Graphs                                                                        |          4 |      1,187 |         20 |         24 |      1,231 |
+| Lib                                                                           |         23 |      1,778 |        236 |        506 |      2,520 |
+| Lib (Files)                                                                   |          7 |        429 |         75 |        100 |        604 |
+| Lib\Lighting                                                                  |          5 |        630 |         60 |        140 |        830 |
+| Lib\cutscenes                                                                 |         11 |        719 |        101 |        266 |      1,086 |
+| Lib\cutscenes (Files)                                                         |          2 |        482 |         42 |        196 |        720 |
+| Lib\cutscenes\actions                                                         |          9 |        237 |         59 |         70 |        366 |
+| Scenes                                                                        |          4 |        353 |          4 |         36 |        393 |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                      | language   | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| c:\programming\PixelNoir\mvp\src\Actions\FollowPath.ts                        | TypeScript |        114 |          3 |         29 |        146 |
+| c:\programming\PixelNoir\mvp\src\Actions\MoveActor.ts                         | TypeScript |         97 |          9 |         21 |        127 |
+| c:\programming\PixelNoir\mvp\src\Actions\SwitchScene.ts                       | TypeScript |         45 |          3 |         11 |         59 |
+| c:\programming\PixelNoir\mvp\src\Actions\Wait.ts                              | TypeScript |         48 |          0 |          9 |         57 |
+| c:\programming\PixelNoir\mvp\src\Actions\actionRegistry.ts                    | TypeScript |         80 |          1 |         12 |         93 |
+| c:\programming\PixelNoir\mvp\src\Actors\detective.ts                          | TypeScript |        109 |          7 |         20 |        136 |
+| c:\programming\PixelNoir\mvp\src\Actors\staticMap.ts                          | TypeScript |         74 |          0 |         10 |         84 |
+| c:\programming\PixelNoir\mvp\src\Animations\Chef.ts                           | TypeScript |        101 |          3 |         22 |        126 |
+| c:\programming\PixelNoir\mvp\src\Animations\Detective.ts                      | TypeScript |        103 |          3 |         22 |        128 |
+| c:\programming\PixelNoir\mvp\src\Components\animation.ts                      | TypeScript |         65 |          4 |         19 |         88 |
+| c:\programming\PixelNoir\mvp\src\Content\NPCs\chef.ts                         | TypeScript |         22 |         46 |          3 |         71 |
+| c:\programming\PixelNoir\mvp\src\Graphs\PIOffice.ts                           | TypeScript |        145 |          5 |          6 |        156 |
+| c:\programming\PixelNoir\mvp\src\Graphs\bar.ts                                | TypeScript |        116 |          5 |          6 |        127 |
+| c:\programming\PixelNoir\mvp\src\Graphs\overworld.ts                          | TypeScript |        828 |          5 |          6 |        839 |
+| c:\programming\PixelNoir\mvp\src\Graphs\warehouse.ts                          | TypeScript |         98 |          5 |          6 |        109 |
+| c:\programming\PixelNoir\mvp\src\Lib\ClockManager.ts                          | TypeScript |         29 |          3 |          7 |         39 |
+| c:\programming\PixelNoir\mvp\src\Lib\GlobalEvents.ts                          | TypeScript |          7 |          1 |          3 |         11 |
+| c:\programming\PixelNoir\mvp\src\Lib\InputMapper.ts                           | TypeScript |         27 |          3 |          6 |         36 |
+| c:\programming\PixelNoir\mvp\src\Lib\Lighting\FlickerSystem.ts                | TypeScript |         53 |          4 |         13 |         70 |
+| c:\programming\PixelNoir\mvp\src\Lib\Lighting\LightingComponents.ts           | TypeScript |         84 |         32 |         16 |        132 |
+| c:\programming\PixelNoir\mvp\src\Lib\Lighting\LightingSystem.ts               | TypeScript |        418 |         14 |         89 |        521 |
+| c:\programming\PixelNoir\mvp\src\Lib\Lighting\index.ts                        | TypeScript |          6 |          4 |          1 |         11 |
+| c:\programming\PixelNoir\mvp\src\Lib\Lighting\lighting-system-spect.ts        | TypeScript |         69 |          6 |         21 |         96 |
+| c:\programming\PixelNoir\mvp\src\Lib\NPCManager.ts                            | TypeScript |        245 |         48 |         52 |        345 |
+| c:\programming\PixelNoir\mvp\src\Lib\WorldClock.ts                            | TypeScript |         54 |         18 |         16 |         88 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\CutScenes.ts                   | TypeScript |        185 |         42 |         52 |        279 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\AnimateAction.ts       | TypeScript |         31 |          9 |          8 |         48 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\CameraAction.ts        | TypeScript |         54 |          8 |          9 |         71 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\DialogAction.ts        | TypeScript |         30 |          7 |          9 |         46 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\FlagAction.ts          | TypeScript |         18 |          6 |          7 |         31 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\MoveAction.ts          | TypeScript |         30 |         11 |          8 |         49 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\QuestCompleteAction.ts | TypeScript |         18 |          1 |          7 |         26 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\QuestStartAction.ts    | TypeScript |         18 |         11 |          7 |         36 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\SpawnAction.ts         | TypeScript |         23 |          6 |          8 |         37 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\actions\WaitAction.ts          | TypeScript |         15 |          0 |          7 |         22 |
+| c:\programming\PixelNoir\mvp\src\Lib\cutscenes\plan.md                        | Markdown   |        297 |          0 |        144 |        441 |
+| c:\programming\PixelNoir\mvp\src\Lib\utils.ts                                 | TypeScript |         43 |          0 |          7 |         50 |
+| c:\programming\PixelNoir\mvp\src\Lib\worldState.ts                            | TypeScript |         24 |          2 |          9 |         35 |
+| c:\programming\PixelNoir\mvp\src\Scenes\Bar.ts                                | TypeScript |         79 |          1 |          8 |         88 |
+| c:\programming\PixelNoir\mvp\src\Scenes\Overworld.ts                          | TypeScript |        123 |          1 |         14 |        138 |
+| c:\programming\PixelNoir\mvp\src\Scenes\PIOffice.ts                           | TypeScript |         77 |          1 |          7 |         85 |
+| c:\programming\PixelNoir\mvp\src\Scenes\Warehouse.ts                          | TypeScript |         74 |          1 |          7 |         82 |
+| c:\programming\PixelNoir\mvp\src\main.ts                                      | TypeScript |         67 |          2 |          9 |         78 |
+| c:\programming\PixelNoir\mvp\src\resources.ts                                 | TypeScript |         27 |          1 |          4 |         32 |
+| c:\programming\PixelNoir\mvp\src\style.css                                    | PostCSS    |         49 |          4 |          4 |         57 |
+| c:\programming\PixelNoir\mvp\src\types.d.ts                                   | TypeScript |         36 |          2 |         10 |         48 |
+| c:\programming\PixelNoir\mvp\src\types.ts                                     | TypeScript |         35 |          5 |          7 |         47 |
+| Total                                                                         |            |      4,390 |        353 |        778 |      5,521 |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+

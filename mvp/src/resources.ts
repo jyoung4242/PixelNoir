@@ -9,6 +9,8 @@ import PIofficeUpper from "./Assets/PIofficeUpper.png";
 import PIofficeLower from "./Assets/PIofficeLower.png";
 import warehouseUpper from "./Assets/warehouseUpper.png";
 import warehouseLower from "./Assets/warehouseLower.png";
+import npcChef from "./Assets/chef.png";
+import npcKaren from "./Assets/npc1.png";
 
 import clockCover from "./Assets/Clock/cosmetic cover sans cog.png";
 import dayNightDisc from "./Assets/Clock/day_night_disck.png";
@@ -33,6 +35,8 @@ export const Resources = {
   minHand: new ImageSource(minHand),
   cog: new ImageSource(cog),
   clockFace: new ImageSource(clockFace),
+  npcChef: new ImageSource(npcChef),
+  npcKaren: new ImageSource(npcKaren),
 };
 
 export const loader = new Loader();

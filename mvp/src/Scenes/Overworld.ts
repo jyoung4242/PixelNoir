@@ -1,4 +1,4 @@
-import { Engine, Entity, Scene, SceneActivationContext, Trigger, vec, Vector } from "excalibur";
+import { Engine, Entity, Scene, SceneActivationContext, System, Trigger, vec, Vector } from "excalibur";
 import { StaticMap } from "../Actors/staticMap";
 import { Resources } from "../resources";
 import { Detective } from "../Actors/detective";
@@ -8,14 +8,22 @@ import { clockManager } from "../main";
 import { ClockUI } from "../UI/ClockUI";
 import { LightingSystem } from "../Lib/Lighting";
 import { LightingActor } from "../Actors/lightingActor";
+import { npcManager } from "../Lib/NPCManager";
+import { overworldgraph } from "../Graphs/overworld";
+import { CutsceneManifest, CutSceneSystem } from "../Lib/cutscenes/CutScenes";
+import { LogAction } from "../Lib/cutscenes/actions/log";
 
 export class OverWorld extends Scene<TransitionContext> {
   name = "Overworld";
+  graph = overworldgraph;
   map: StaticMap | undefined = undefined;
   barTrigger: Trigger | undefined = undefined;
   warehouseTrigger: Trigger | undefined = undefined;
   PIofficeTrigger: Trigger | undefined = undefined;
   lighting: LightingSystem | undefined = undefined;
+  cutsceneTrigger: Trigger | undefined = undefined;
+
+  cutSceneSystem: CutSceneSystem | undefined = undefined;
 
   player: Detective | undefined = undefined;
 
@@ -24,6 +32,9 @@ export class OverWorld extends Scene<TransitionContext> {
   }
 
   onInitialize(engine: Engine) {
+    let CSsystem = new CutSceneSystem(this.world);
+    this.cutSceneSystem = CSsystem;
+    this.world.add(CSsystem);
     this.map = new StaticMap({
       width: 640,
       height: 320,
@@ -124,14 +135,69 @@ export class OverWorld extends Scene<TransitionContext> {
     });
     this.world.add(this.lighting);
     this.world.add(new LightingActor());
+    this.cutsceneTrigger = new Trigger({
+      pos: vec(9 * 16 + 8, 12 * 16 + 8),
+      width: 16,
+      height: 16,
+      action: (ent: Entity) => {
+        if (ent instanceof Detective) {
+          console.log("triggered cutscene");
+          this.cutSceneSystem?.startCutScene("test");
+        }
+      },
+    });
+    this.add(this.cutsceneTrigger);
+    console.log(this.cutsceneTrigger);
+
+    const testCutscene: CutsceneManifest = {
+      id: "test",
+      commands: [
+        {
+          type: "log",
+          args: {
+            message: "Starting introduction sequence...",
+            level: "info",
+          },
+        },
+        {
+          type: "wait",
+          args: {
+            duration: 2500,
+          },
+        },
+        {
+          type: "log",
+          args: {
+            message: "Intro sequence complete.",
+            level: "info",
+          },
+        },
+      ],
+    };
+    this.cutSceneSystem.registerCutScene(testCutscene.id, testCutscene);
+    this.cutSceneSystem.registerCommand("log", LogAction);
   }
 
   onActivate(ctx: SceneActivationContext<TransitionContext>) {
     initPlayerInScene(this, ctx);
+    let npcsToLoad = npcManager.getSceneNPCs(this.name);
+    npcsToLoad.forEach(n => this.add(n));
+    this.addAllActorsBack();
   }
 
   onDeactivate(ctx: SceneActivationContext) {
     this.remove(this.player!);
     this.player = undefined;
+    this.clear();
+  }
+
+  addAllActorsBack() {
+    if (!this.map || !this.barTrigger || !this.warehouseTrigger || !this.PIofficeTrigger || !this.cutsceneTrigger)
+      throw new Error("whoops");
+    this.add(this.map);
+    this.add(this.barTrigger);
+    this.add(this.warehouseTrigger);
+    this.add(this.PIofficeTrigger);
+    this.add(this.cutsceneTrigger);
   }
 }

@@ -12,6 +12,7 @@ import "./style.css";
 
 import { Engine, DisplayMode, vec, FadeInOut, Color, Vector, PreUpdateEvent } from "excalibur";
 import { TransitionContext } from "./types";
+import { InitializeGameNPCs, npcManager } from "./Lib/NPCManager";
 import { ClockManager } from "./Lib/ClockManager";
 
 const game = new Engine({
@@ -54,7 +55,9 @@ const game = new Engine({
 
 await game.start(loader);
 initializeInputMappings(game);
-initializeGlobalEvents();
+InitializeGameNPCs();
+
+export const clockManager = new ClockManager();
 
 export const clockManager = new ClockManager();
 
@@ -64,6 +67,15 @@ game.goToScene<TransitionContext>("Overworld", { sceneActivationData: { player, 
 
 const preUpdateHandler = (evt: PreUpdateEvent<Engine>) => {
   clockManager.update(evt.elapsed);
+  // console.log(clockManager.clock.timeString);
+
+  npcManager.updateNPCs(
+    evt.elapsed,
+    clockManager.clock.timeString,
+    new Set(), // Story points
+    game.currentScene,
+    game.currentSceneName,
+  );
 };
-game.timescale = 12;
+
 game.on("preupdate", preUpdateHandler);
