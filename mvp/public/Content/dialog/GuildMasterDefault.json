@@ -1,0 +1,21 @@
+{
+  "id": "guild-master-default",
+  "startNodeId": "greet",
+  "nodes": {
+    "greet": {
+      "speaker": "Guild Master",
+      "portrait": "guild-master",
+      "text": "The Workshop waits, friend. East through the forest.",
+      "choices": [
+        { "label": "Any more details about the Workshop?", "nextNodeId": "details" },
+        { "label": "Goodbye.", "nextNodeId": null }
+      ]
+    },
+    "details": {
+      "speaker": "Guild Master",
+      "portrait": "guild-master",
+      "text": "Our old schematics show the inner chambers are sealed by electrical locks. If you find a way to power them from the inside, you should be able to push deeper.",
+      "autoNextNodeId": null
+    }
+  }
+}

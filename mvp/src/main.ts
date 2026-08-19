@@ -15,8 +15,9 @@ import { TransitionContext } from "./types";
 import { InitializeGameNPCs, npcManager } from "./Lib/NPCManager";
 import { ClockManager } from "./Lib/ClockManager";
 import { StoryResolver, StoryStore } from "./Lib/StoryPoints";
+import { CutsceneScene } from "./Scenes/CutsceneScene";
 
-const game = new Engine({
+export const game = new Engine({
   width: 800, // the width of the canvas
   height: 600, // the height of the canvas
   displayMode: DisplayMode.Fixed, // the display mode
@@ -74,7 +75,7 @@ const preUpdateHandler = (evt: PreUpdateEvent<Engine>) => {
     evt.elapsed,
     clockManager.clock.timeString,
     new Set(), // Story points
-    game.currentScene,
+    game.currentScene as CutsceneScene<any>,
     game.currentSceneName,
   );
 };

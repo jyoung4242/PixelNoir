@@ -1,4 +1,4 @@
-import dialogSchema from "../../../public/data/dialog/dialog_schema.json";
+import dialogSchema from "../../Content/dialog/dialog_schema.json";
 
 type DialogSchema = {
   required?: string[];
@@ -114,15 +114,15 @@ export class DialogLoader {
   private static normalizeSourcePath(sourcePath: string): string {
     const trimmed = sourcePath.replace(/\\/g, "/").trim();
 
-    if (trimmed.startsWith("/public/data/")) {
-      return trimmed.replace("/public/data/", "/data/");
+    if (trimmed.startsWith("/public/Content/")) {
+      return trimmed.replace("/public/Content/", "/Content/");
     }
 
-    if (trimmed.startsWith("/data/")) {
+    if (trimmed.startsWith("/Content/")) {
       return trimmed;
     }
 
-    return `/data/${trimmed.replace(/^\/+/, "")}`;
+    return `${trimmed.replace(/^\/+/, "")}`;
   }
 
   private collectNextNodeIds(node: DialogueNodeData): string[] {

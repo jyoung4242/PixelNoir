@@ -1,5 +1,4 @@
 import { Sprite } from "excalibur";
-import { Resources } from "../../resources";
 import { DialogUI } from "../../UI/DialogUI";
 import { DialogLoader, DialogueChoiceData, DialogueTree } from "./DialogLoader";
 
@@ -135,12 +134,12 @@ export class DialogRunner {
     const normalizedKey = portraitKey.toLowerCase();
 
     switch (normalizedKey) {
-      case "fairy":
-        return Resources.fairy.toSprite();
-      case "link":
-        return Resources.link.toSprite();
-      case "chasm":
-        return Resources.chasm.toSprite();
+      // case "fairy":
+      //   return Resources.fairy.toSprite();
+      // case "link":
+      //   return Resources.link.toSprite();
+      // case "chasm":
+      //   return Resources.chasm.toSprite();
       case "none":
       default:
         return null;

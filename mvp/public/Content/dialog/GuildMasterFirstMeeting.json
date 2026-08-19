@@ -1,0 +1,46 @@
+{
+  "id": "guild-master-first-meeting",
+  "startNodeId": "greet",
+  "nodes": {
+    "greet": {
+      "speaker": "Guild Master",
+      "portrait": "guild-master",
+      "text": "Ah, a new face. Welcome to the Tinker's Guild. We don't get many visitors these days.",
+      "setsFlag": "met-guild-master",
+      "choices": [
+        { "label": "Tell me about the Guild.", "nextNodeId": "about-guild" },
+        { "label": "I heard there's work available.", "nextNodeId": "work" },
+        { "label": "I'll come back later.", "nextNodeId": null }
+      ]
+    },
+    "about-guild": {
+      "speaker": "Guild Master",
+      "portrait": "guild-master",
+      "text": "We're engineers. Builders. Or we were, before the Workshop went dark. Something happened in there — machines that shouldn't move, moving. We've lost three scouts already.",
+      "choices": [
+        { "label": "I heard there's work available.", "nextNodeId": "work" },
+        { "label": "I'll come back later.", "nextNodeId": null }
+      ]
+    },
+    "work": {
+      "speaker": "Guild Master",
+      "portrait": "guild-master",
+      "text": "There is. The Forgotten Workshop — east of the forest. We need someone to get inside, find out what's powering it, and shut it down. The Guild will compensate you well.",
+      "choices": [
+        {
+          "label": "I'll take the job.",
+          "nextNodeId": "accept",
+          "startsQuest": "clear_workshop",
+          "setsFlag": "quest-clear-workshop-accepted"
+        },
+        { "label": "I need to think about it.", "nextNodeId": null }
+      ]
+    },
+    "accept": {
+      "speaker": "Guild Master",
+      "portrait": "guild-master",
+      "text": "Good. Take the forest path east. And be careful — whatever's running that place, it's not friendly.",
+      "autoNextNodeId": null
+    }
+  }
+}

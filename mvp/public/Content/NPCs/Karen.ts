@@ -1,7 +1,7 @@
 import { vec, Vector } from "excalibur";
-import { NpcManifest, InteractionManifest } from "../../types";
-import { CutsceneManifest } from "../../Lib/cutscenes/CutScenes";
-import { game } from "../../main";
+import { NpcManifest, InteractionManifest } from "../../../src/types";
+import { CutsceneManifest } from "../../../src/Lib/cutscenes/CutScenes";
+import { game } from "../../../src/main";
 
 export const karenManifest: NpcManifest = {
   name: "Karen",
@@ -36,7 +36,8 @@ export const karenCutscene: CutsceneManifest = {
     {
       type: "dialog",
       args: {
-        path: "public/Content/dialog/test.json",
+        path: "/public/dialog/test.json",
+        scene: game.currentScene,
       },
     },
     {
