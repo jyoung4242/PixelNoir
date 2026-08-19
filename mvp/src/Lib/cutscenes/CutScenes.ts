@@ -14,6 +14,7 @@ import {
   ParallelActions,
   Blink,
 } from "excalibur";
+import { DialogAction } from "../../Actions/Dialog";
 
 // ==========================================
 // 1. Types & Manifest Interfaces
@@ -279,6 +280,14 @@ export class CutSceneSystem extends System {
         // Execute the action directly on the target entity, not the director!
         await entity.actions.runAction(new Blink(entity, timeOn, timeOff, numBlinks)).toPromise();
       }
+    });
+
+    this.registerCommand("dialog", async (args, ctx) => {
+      const { path } = args;
+      const currentScene = ctx.engine.currentScene;
+
+      if (!currentScene) return;
+      await ctx.system.director.actions.runAction(new DialogAction(ctx.system.director, path)).toPromise();
     });
 
     this.registerCommand("parallel", async (args, ctx) => {

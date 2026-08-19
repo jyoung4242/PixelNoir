@@ -1,11 +1,15 @@
 import { Actor, vec, Vector } from "excalibur";
-import { ActionStep } from "../types";
 import { MoveActor } from "./MoveActor";
 import { AnimationComponent } from "../Components/animation";
 import { Wait } from "./Wait";
 import { NPCData, NPCActor } from "../Lib/NPCManager";
 import { SwitchScene } from "./SwitchScene";
 import { FollowPath } from "./FollowPath";
+import { DialogLoader } from "../Lib/dialog/DialogLoader";
+import { DialogRunner } from "../Lib/dialog/DialogRunner";
+import { DialogUI } from "../UI/DialogUI";
+import { CutsceneScene } from "../Scenes/CutsceneScene";
+import { game } from "../main";
 
 export type ActionCommandHandler = (actor: Actor, args: Record<string, any>, onComplete: () => void) => void;
 
@@ -86,6 +90,17 @@ export const ActionRegistry: Record<string, ActionDefinition> = {
       } else if (args.x !== undefined && args.y !== undefined) {
         npc.virtualTile = vec(args.x, args.y);
       }
+    },
+  },
+  dialog: {
+    execute: (_actor, args, _onComplete) => {
+      debugger;
+      const { path }: { path: string; scene: CutsceneScene<any> } = args as { path: string; scene: CutsceneScene<any> };
+      const dialogUI = new DialogUI();
+      game.currentScene.add(dialogUI);
+      const dialogRunner = new DialogRunner(dialogUI, new DialogLoader(path));
+      void dialogRunner.start();
+      dialogUI.show();
     },
   },
 };

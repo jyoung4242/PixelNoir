@@ -1,0 +1,21 @@
+{
+  "id": "blacksmith-default",
+  "startNodeId": "greet",
+  "nodes": {
+    "greet": {
+      "speaker": "Blacksmith",
+      "portrait": "blacksmith",
+      "text": "Need something forged? Bring me the materials and I'll see what I can do.",
+      "choices": [
+        { "label": "Let me see what you can make.", "nextNodeId": "crafting-stub" },
+        { "label": "Goodbye.", "nextNodeId": null }
+      ]
+    },
+    "crafting-stub": {
+      "speaker": "Blacksmith",
+      "portrait": "blacksmith",
+      "text": "[ Crafting menu — not yet implemented ]",
+      "autoNextNodeId": null
+    }
+  }
+}
