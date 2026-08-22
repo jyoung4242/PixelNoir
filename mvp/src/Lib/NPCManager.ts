@@ -304,7 +304,6 @@ export class NPCActor extends Actor {
 
     const data = npcManager.npcs.get(this.npcId);
     if (!data || !data.activeRoutineId) return;
-
     if (this.currentStepIndex !== data.currentStepIndex) {
       this.currentStepIndex = data.currentStepIndex;
 
@@ -329,8 +328,8 @@ export class NPCActor extends Actor {
 
   private advanceToNextStep(): void {
     const data = npcManager.npcs.get(this.npcId);
-    if (!data || !data.activeRoutineId) return;
 
+    if (!data || !data.activeRoutineId) return;
     const routine = data.manifest.routines.find(r => r.id === data.activeRoutineId);
     if (!routine) return;
 

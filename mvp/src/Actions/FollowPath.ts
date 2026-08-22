@@ -104,8 +104,9 @@ export class FollowPath implements Action {
     return hits.some(hit => {
       const owner = hit.collider.owner;
       const isSelf = owner === this.actor;
-      const isInteraction = owner?.hasTag("interaction");
+      const isInteraction = owner?.hasTag("interactable");
       const isTrigger = owner instanceof Trigger || hit.body.collisionType === CollisionType.PreventCollision;
+      console.log(owner, isSelf, isInteraction, isTrigger);
 
       return !isSelf && !isTrigger && !isInteraction;
     });
@@ -120,8 +121,6 @@ export class FollowPath implements Action {
     const targetPos = this._path[this._currentIndex];
     const vectorToTarget = targetPos.sub(this.actor.pos);
     const distance = vectorToTarget.size;
-
-    // Target node reached: Snap to position and allow next segment evaluation
     if (distance <= this.arrivalThreshold) {
       this.actor.pos = targetPos;
       this._currentIndex++;
